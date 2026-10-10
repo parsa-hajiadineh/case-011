@@ -1,0 +1,17 @@
+# Local guidance and tool state
+/.agents/
+/.codex/
+/AGENTS.md
+/AGENTS.local.md
+
+# Local editor settings and operating system metadata
+/.vscode/
+/.idea/
+.DS_Store
+Thumbs.db
+
+# Local environment variables and credentials
+.env
+.env.*
+!.env.example
+/.aws/

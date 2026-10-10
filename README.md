@@ -1,60 +1,42 @@
 # CASE 011
 
-معماری اولیهٔ وبسایت بازی معمایی و کارآگاهی CASE 011.
+CASE 011 is a mystery investigation game website with four independent entry pages, each intended to be reached through its own URL and QR code.
 
-## معماری
+## Current status
 
-وبسایت استاتیک با چهار ورودی مستقل، بر پایهٔ HTML، CSS و JavaScript ساده. هیچ کتابخانه، فریم‌ورک، ابزار build، طراحی یا قابلیت بازی در این مرحله اضافه نشده است.
+Only the directory scaffold exists. HTML, CSS, and JavaScript files are empty; no page designs, story content, puzzles, or gameplay features are implemented. QR codes and hosting are not configured.
+
+## Structure
 
 ```text
 public/
   entry-1/
-    index.html
-    styles.css
-    script.js
-    assets/.gitkeep
   entry-2/
-    index.html
-    styles.css
-    script.js
-    assets/.gitkeep
   entry-3/
-    index.html
-    styles.css
-    script.js
-    assets/.gitkeep
   entry-4/
-    index.html
-    styles.css
-    script.js
-    assets/.gitkeep
 ```
 
-تمام فایل‌های صفحه عمداً خالی هستند. پیاده‌سازی هر صفحه پس از دریافت مشخصات آن انجام می‌شود. فایل `.gitkeep` فقط پوشهٔ خالی دارایی‌ها را در Git نگه می‌دارد.
+Each entry directory contains its own `index.html`, `styles.css`, `script.js`, and `assets/` directory. Empty asset directories are retained with `.gitkeep` files.
 
-## مسیرهای مستقیم
+| Entry | Direct path |
+| --- | --- |
+| 1 | `/entry-1/` |
+| 2 | `/entry-2/` |
+| 3 | `/entry-3/` |
+| 4 | `/entry-4/` |
 
-| ورودی | مسیر | پوشه |
-| --- | --- | --- |
-| ۱ | `/entry-1/` | `public/entry-1/` |
-| ۲ | `/entry-2/` | `public/entry-2/` |
-| ۳ | `/entry-3/` | `public/entry-3/` |
-| ۴ | `/entry-4/` | `public/entry-4/` |
+Pages must remain independent, with no links or navigation between them and no requirement to visit another page first. Keep page-specific code and assets within the corresponding directory. Page implementation is pending individual requirements.
 
-نام‌ها شناسه‌های اولیهٔ ساختاری هستند. هر QR Code در زمان انتشار به نشانی کامل ورودی خودش مانند `https://<domain>/entry-1/` اشاره می‌کند.
+## Local development
 
-هر صفحه مستقل توسعه داده می‌شود: HTML، CSS، JavaScript و دارایی‌های آن فقط در پوشهٔ خودش قرار می‌گیرند و با مسیرهای نسبی بارگذاری می‌شوند. تصاویر، صداها و سایر دارایی‌ها داخل `assets/` همان صفحه قرار می‌گیرند. امکانات تعاملی و معماها نیز پس از دریافت مشخصات به فایل‌های همان صفحه اضافه خواهند شد.
-
-هیچ لینک، دکمه، منو یا انتقال خودکاری بین ورودی‌ها اضافه نشود. ورود به هر صفحه نباید به بازدید یا وضعیت صفحهٔ دیگری وابسته باشد. فعلاً هیچ کد یا وضعیت مشترکی وجود ندارد و صفحهٔ اصلی یا فهرست ورودی‌ها ساخته نشده است.
-
-## اجرای محلی و انتشار در مراحل بعد
-
-ریشهٔ فایل‌های قابل انتشار `public/` است. پروژه به نصب بسته یا build نیاز ندارد. برای اجرای محلی از سرور استاتیک استفاده کنید؛ مثلاً اگر Python نصب است، از ریشهٔ پروژه اجرا کنید:
+No dependencies or build step are required. Serve `public/` with a static HTTP server. If Python 3 is installed, run from the repository root:
 
 ```sh
 python -m http.server 8000 --directory public
 ```
 
-هر ورودی مستقیماً با نشانی مانند `http://localhost:8000/entry-1/` باز می‌شود. فعلاً صفحات خالی نمایش داده می‌شوند.
+Open an entry directly, such as `http://localhost:8000/entry-1/`. All four entries currently display blank pages.
 
-برای انتشار، پوشهٔ `public/` را ریشهٔ میزبانی استاتیک تنظیم کنید. میزبان باید `index.html` هر پوشه را برای مسیر همان پوشه سرو کند. بازنویسی همهٔ مسیرها به یک صفحهٔ مشترک لازم نیست. در این مرحله انتشار یا ساخت QR Code انجام نشده است.
+## Deployment
+
+The static document root is `public/`. Hosting must serve each directory's `index.html` at its corresponding path without routing all entries to a shared page. Each future QR code should point to its entry's full deployed URL. No hosting provider or deployment workflow has been selected.
