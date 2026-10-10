@@ -52,10 +52,7 @@ form.addEventListener("submit", (event) => {
     window.setTimeout(() => {
       fileStatus.textContent = "دسترسی به پرونده فعال شد.";
       window.setTimeout(() => {
-        document.getElementById("access-view").hidden = true;
-        document.getElementById("destination-view").hidden = false;
-        document.title = "پرونده CASE 011";
-        document.getElementById("destination-title").focus();
+        showInternalView("destination-view", "destination-title", "پرونده CASE 011");
       }, 2200);
     }, 2000);
   }, 520);
@@ -66,6 +63,43 @@ archiveInput.addEventListener("input", () => {
   error.textContent = "";
   archiveInput.removeAttribute("aria-invalid");
 });
+
+const internalViews = ["access-view", "destination-view", "evidence-view"];
+const evidenceButton = document.getElementById("open-evidence");
+let suspectScrollPosition = 0;
+
+function showInternalView(viewId, focusId, title, scrollPosition = 0) {
+  for (const id of internalViews) {
+    const view = document.getElementById(id);
+    view.hidden = id !== viewId;
+    view.inert = id !== viewId;
+  }
+  document.title = title;
+  document.getElementById(focusId).focus({ preventScroll: true });
+  window.scrollTo({ top: scrollPosition, left: 0, behavior: "instant" });
+}
+
+evidenceButton.addEventListener("click", () => {
+  if (document.getElementById("destination-view").hidden) return;
+  suspectScrollPosition = window.scrollY;
+  showInternalView("evidence-view", "requirements-title", "EVIDENCE 03");
+});
+
+document.getElementById("return-suspects").addEventListener("click", () => {
+  if (document.getElementById("evidence-view").hidden) return;
+  // Retain the existing nodes so native details elements keep their open state.
+  document.getElementById("destination-view").setAttribute("data-restored", "true");
+  showInternalView("destination-view", "open-evidence", "پرونده CASE 011", suspectScrollPosition);
+});
+
+for (const image of document.querySelectorAll(".suspect-portrait img")) {
+  const showFallback = () => {
+    image.hidden = true;
+    image.nextElementSibling.hidden = false;
+  };
+  image.addEventListener("error", showFallback, { once: true });
+  if (image.complete && image.naturalWidth === 0) showFallback();
+}
 
 const soundToggle = document.getElementById("sound-toggle");
 const soundLabel = document.getElementById("sound-label");

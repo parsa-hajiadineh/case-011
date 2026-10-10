@@ -55,6 +55,7 @@
           <form id="archive-form" novalidate>
             <label for="archive-number">شماره بایگانی را وارد کنید</label>
             <input id="archive-number" name="archive-number" type="text" inputmode="numeric" enterkeyhint="go" autocomplete="off" spellcheck="false" dir="ltr" aria-describedby="archive-error">
+            <button class="primary-button" id="submit-button" type="submit"><span class="button-label">بررسی شماره بایگانی</span><svg class="button-arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M19 12H5m6-6-6 6 6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="button-spinner" aria-hidden="true"></span></button>
             <div class="feedback-slot">
               <p class="field-error" id="archive-error" role="alert" aria-atomic="true"></p>
               <div class="access-status" id="access-status" role="status" aria-live="polite" aria-atomic="false" aria-relevant="additions text">
@@ -63,14 +64,154 @@
                 <p class="confirmation"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m7 12 3 3 7-7" pathLength="1"/></svg><span id="file-status"></span></p>
               </div>
             </div>
-            <button class="primary-button" id="submit-button" type="submit"><span class="button-label">بررسی شماره بایگانی</span><svg class="button-arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M19 12H5m6-6-6 6 6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="button-spinner" aria-hidden="true"></span></button>
           </form>
           <noscript><p class="field-error">برای بررسی شماره بایگانی، جاوااسکریپت مرورگر را فعال کنید.</p></noscript>
         </div>
       </section>
 
-      <section class="document-panel destination" id="destination-view" aria-labelledby="destination-title" hidden>
-        <h1 id="destination-title" tabindex="-1">پرونده <bdi dir="ltr">CASE 011</bdi></h1>
+      <section class="records-view" id="destination-view" aria-labelledby="destination-title" hidden>
+        <div class="view-heading">
+          <h1 id="destination-title" tabindex="-1">پرونده <bdi dir="ltr">CASE 011</bdi></h1>
+          <h2>مظنونین پرونده</h2>
+        </div>
+        <div class="dossier-grid">
+          <article class="dossier-card" aria-labelledby="suspect-01">
+            <div class="dossier-identity">
+              <div class="suspect-portrait">
+                <img src="assets/suspects/IMG_0703.png" alt="کامران فرهمند" width="1076" height="1461" loading="lazy" decoding="async">
+                <div class="portrait-fallback" role="img" aria-label="کامران فرهمند" hidden><span>تصویر در دسترس نیست</span></div>
+              </div>
+              <div><span class="record-number" dir="ltr">01</span><h3 id="suspect-01">کامران فرهمند</h3></div>
+            </div>
+            <dl class="dossier-meta">
+              <div><dt>سن</dt><dd> سال</dd></div>
+              <div><dt>نسبت با قربانی</dt><dd>همکار و شریک تجاری</dd></div>
+              <div><dt>وضعیت در پرونده</dt><dd>تحت بررسی</dd></div>
+            </dl>
+            <section class="relationship-history" aria-labelledby="history-01">
+              <h4 id="history-01">پیشینه ارتباط</h4>
+              <p>کامران فرهمند از مدیران ارشد مالی شرکتی بود که النا راد نیز در آن فعالیت میکرد. او برخلاف مسئولان اجرایی معمول اختیارات گستردهای در مدیریت منابع مالی تأیید تراکنشها و نظارت بر گردش وجوه شرکت داشت. جایگاه او امکان دسترسی به اطلاعات و اسناد مالی مهم را فراهم کرده بود.</p>
+            </section>
+            <details class="statement">
+              <summary>مشاهده اظهارات</summary>
+              <div class="statement-content">
+                <h4>اظهارات اولیه</h4>
+                <p>کامران هرگونه دخالت در مرگ النا را رد کرده است. او در اظهارات اولیه خود مدعی شده که ارتباط کاریاش با النا همانند گذشته در چارچوب فعالیتهای شرکت بوده و در شب حادثه برای انجام برخی حسابرسیهای مالی نزد او رفته است.</p>
+                <p>او همچنین اظهار داشته که پیش از وقوع اتفاقات محل را ترک کرده و از جزئیات حادثه اطلاعی ندارد.</p>
+              </div>
+            </details>
+            <section class="restricted-motive" aria-labelledby="motive-01">
+              <h4 id="motive-01">انگیزه</h4>
+              <div class="restricted-lines" aria-hidden="true"><span></span><span></span><span></span></div>
+              <p class="restricted-label"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3m-4 4v3"/></svg>دسترسی محدود</p>
+            </section>
+          </article>
+          <article class="dossier-card" aria-labelledby="suspect-02">
+            <div class="dossier-identity">
+              <div class="suspect-portrait">
+                <img src="assets/suspects/IMG_0705.png" alt="نورا آذرگشسب" width="1076" height="1462" loading="lazy" decoding="async">
+                <div class="portrait-fallback" role="img" aria-label="نورا آذرگشسب" hidden><span>تصویر در دسترس نیست</span></div>
+              </div>
+              <div><span class="record-number" dir="ltr">02</span><h3 id="suspect-02">نورا آذرگشسب</h3></div>
+            </div>
+            <dl class="dossier-meta">
+              <div><dt>سن</dt><dd> سال</dd></div>
+              <div><dt>نسبت با قربانی</dt><dd>دوست قدیمی و همکار سابق</dd></div>
+              <div><dt>وضعیت در پرونده</dt><dd>تحت بررسی</dd></div>
+            </dl>
+            <section class="relationship-history" aria-labelledby="history-02">
+              <h4 id="history-02">پیشینه ارتباط</h4>
+              <p>نورا از دوستان قدیمی النا بود و چندین سال است که در همان شرکتی فعالیت میکند که النا در آن مشغول به کار بود. آشنایی طولانیمدت آنها باعث شده بود نورا بارها به خانه النا رفتوآمد داشته باشد.</p>
+            </section>
+            <details class="statement">
+              <summary>مشاهده اظهارات</summary>
+              <div class="statement-content">
+                <h4>اظهارات اولیه</h4>
+                <p>نورا در اظهارات خود تأکید کرده است که با وجود رفتوآمدهای متعدد به خانه النا هرگز وارد اتاق شخصی او نشده است.</p>
+                <p>او همچنین حضور خود در مجتمع در شب حادثه را بهطور کامل انکار کرده و گفته است که آن شب اصلا به آنجا نرفته است.</p>
+              </div>
+            </details>
+            <section class="restricted-motive" aria-labelledby="motive-02">
+              <h4 id="motive-02">انگیزه</h4>
+              <div class="restricted-lines" aria-hidden="true"><span></span><span></span><span></span></div>
+              <p class="restricted-label"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3m-4 4v3"/></svg>دسترسی محدود</p>
+            </section>
+          </article>
+          <article class="dossier-card" aria-labelledby="suspect-03">
+            <div class="dossier-identity">
+              <div class="suspect-portrait">
+                <img src="assets/suspects/IMG_0718.png" alt="آرش نادری" width="1077" height="1461" loading="lazy" decoding="async">
+                <div class="portrait-fallback" role="img" aria-label="آرش نادری" hidden><span>تصویر در دسترس نیست</span></div>
+              </div>
+              <div><span class="record-number" dir="ltr">03</span><h3 id="suspect-03">آرش نادری</h3></div>
+            </div>
+            <dl class="dossier-meta">
+              <div><dt>سن</dt><dd> سال</dd></div>
+              <div><dt>نسبت با قربانی</dt><dd>همسر سابق</dd></div>
+              <div><dt>وضعیت در پرونده</dt><dd>تحت بررسی</dd></div>
+            </dl>
+            <section class="relationship-history" aria-labelledby="history-03">
+              <h4 id="history-03">پیشینه ارتباط</h4>
+              <p>آرش نادری همسر سابق النا راد بود. با وجود پایان زندگی مشترک آنها سابقه رابطه طولانیشان بخشی از اطلاعات مهم پرونده است. بررسی دقیق ارتباطات گذشته و وضعیت رابطه آنها پس از جدایی میتواند به روشن شدن شرایط پیش از حادثه کمک کند.</p>
+            </section>
+            <details class="statement">
+              <summary>مشاهده اظهارات</summary>
+              <div class="statement-content">
+                <h4>اظهارات اولیه</h4>
+                <p>آرش اظهار کرده است که در شب حادثه حدود ساعت : محل را ترک کرده و پس از آن هیچ گفتوگویی با النا نداشته است.</p>
+                <p>او همچنین اعلام کرده که از اتفاقات بعدی و آنچه برای النا رخ داده هیچ اطلاعی ندارد.</p>
+              </div>
+            </details>
+            <section class="restricted-motive" aria-labelledby="motive-03">
+              <h4 id="motive-03">انگیزه</h4>
+              <div class="restricted-lines" aria-hidden="true"><span></span><span></span><span></span></div>
+              <p class="restricted-label"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3m-4 4v3"/></svg>دسترسی محدود</p>
+            </section>
+          </article>
+          <article class="dossier-card" aria-labelledby="suspect-04">
+            <div class="dossier-identity">
+              <div class="suspect-portrait">
+                <img class="portrait-bamakh" src="assets/suspects/IMG_0721.png" alt="باماخ" width="1077" height="1461" loading="lazy" decoding="async">
+                <div class="portrait-fallback" role="img" aria-label="باماخ" hidden><span>تصویر در دسترس نیست</span></div>
+              </div>
+              <div><span class="record-number" dir="ltr">04</span><h3 id="suspect-04">باماخ</h3></div>
+            </div>
+            <dl class="dossier-meta">
+              <div><dt>سن</dt><dd> سال</dd></div>
+              <div><dt>نسبت با قربانی</dt><dd>راننده کامران فرهمند</dd></div>
+              <div><dt>وضعیت در پرونده</dt><dd>تحت بررسی</dd></div>
+            </dl>
+            <section class="relationship-history" aria-labelledby="history-04">
+              <h4 id="history-04">پیشینه ارتباط</h4>
+              <p>باماخ راننده کامران فرهمند بود و در کنار وظایف معمول خود در برخی فعالیتهای مالی مستقل مرتبط با کامران نیز نقش داشت. ارتباط کاری این دو فراتر از رابطه معمول راننده و کارفرما بود و باماخ در بخشی از امور مالی خارج از روال رسمی شرکت با کامران همکاری میکرد.</p>
+            </section>
+            <details class="statement">
+              <summary>مشاهده اظهارات</summary>
+              <div class="statement-content">
+                <h4>اظهارات اولیه</h4>
+                <p>باماخ در اظهارات اولیه خود توضیحات محدودی درباره جزئیات فعالیتهای مالیاش با کامران ارائه کرده است. اطلاعات موجود برای مشخص شدن دامنه دقیق همکاری آنها کافی نیست و این بخش از ارتباطشان همچنان نیازمند بررسی است.</p>
+                <p>او همچنین اظهار داشته که در شب حادثه اصلا وارد ویلا نشده است.</p>
+              </div>
+            </details>
+            <section class="restricted-motive" aria-labelledby="motive-04">
+              <h4 id="motive-04">انگیزه</h4>
+              <div class="restricted-lines" aria-hidden="true"><span></span><span></span><span></span></div>
+              <p class="restricted-label"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3m-4 4v3"/></svg>دسترسی محدود</p>
+            </section>
+          </article>
+        </div>
+        <div class="view-actions"><button class="primary-button view-button" id="open-evidence" type="button">بررسی شواهد</button></div>
+      </section>
+
+      <section class="evidence-view" id="evidence-view" aria-labelledby="requirements-title" hidden>
+        <h1 id="requirements-title" dir="ltr" tabindex="-1">EVIDENCE 03</h1>
+        <p>شواهد فیزیکی مورد نیاز:</p>
+        <ul>
+          <li>عکس صحنه جرم</li>
+          <li>گزارش وضعیت صحنه</li>
+          <li>اظهارات مظنونین</li>
+        </ul>
+        <button class="primary-button view-button" id="return-suspects" type="button">بازگشت به مظنونین</button>
       </section>
     </main>
 
