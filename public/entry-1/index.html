@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#142738">
+  <title>سامانه ثبت مدارک</title>
+  <link rel="stylesheet" href="../shared/foundation.css">
+  <link rel="stylesheet" href="styles.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <div class="portal">
+    <header class="portal-header">
+      <div class="identity">
+        <svg class="institution-mark" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+          <path d="M24 3 44 14v20L24 45 4 34V14Z" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M15 15h18v19H15zM20 21h8M20 26h8" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M24 8v7M24 34v6" stroke="currentColor" stroke-width="1.5"/>
+        </svg>
+        <div>
+          <p class="institution-name">مرکز ثبت و نگهداری مدارک</p>
+          <p class="institution-caption">سامانه ثبت مدارک</p>
+        </div>
+      </div>
+      <span class="case-tag" dir="ltr">CASE 011</span>
+    </header>
+
+    <main class="portal-main">
+      <section class="document-panel" id="access-view" aria-labelledby="access-title">
+        <div class="document-rule" aria-hidden="true"><span></span><span></span><span></span></div>
+        <h1 id="access-title">سامانه ثبت مدارک</h1>
+        <form id="archive-form" novalidate>
+          <label for="archive-number">شماره بایگانی را وارد کنید</label>
+          <input id="archive-number" name="archive-number" type="text" inputmode="numeric" enterkeyhint="go" autocomplete="off" spellcheck="false" dir="ltr" aria-describedby="archive-error">
+          <p class="field-error" id="archive-error" role="alert" aria-atomic="true"></p>
+          <button class="primary-button" id="submit-button" type="submit">بررسی شماره بایگانی</button>
+        </form>
+        <div class="access-status" id="access-status" role="status" aria-live="polite" aria-atomic="false" aria-relevant="additions text">
+          <p id="evidence-status"></p>
+          <p id="file-status"></p>
+        </div>
+        <noscript><p class="field-error">برای بررسی شماره بایگانی، جاوااسکریپت مرورگر را فعال کنید.</p></noscript>
+      </section>
+
+      <section class="document-panel destination" id="destination-view" aria-labelledby="destination-title" hidden>
+        <h1 id="destination-title" tabindex="-1">پرونده <bdi dir="ltr">CASE 011</bdi></h1>
+      </section>
+    </main>
+
+    <footer class="portal-footer">
+      <button class="sound-button" id="sound-toggle" type="button" aria-pressed="false" aria-describedby="sound-status">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 9v6h4l5 4V5L9 9H5ZM18 9v6M21 7v10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span id="sound-label">صدا خاموش است · روشن کردن</span>
+      </button>
+      <p id="sound-status" class="sound-status" role="status" aria-live="polite"></p>
+    </footer>
+  </div>
+</body>
+</html>
