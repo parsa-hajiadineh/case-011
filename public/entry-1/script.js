@@ -6,6 +6,7 @@ const submitButton = document.getElementById("submit-button");
 const error = document.getElementById("archive-error");
 const evidenceStatus = document.getElementById("evidence-status");
 const fileStatus = document.getElementById("file-status");
+const checkingStatus = document.getElementById("checking-status");
 let accessPending = false;
 
 function normalizeArchiveNumber(value) {
@@ -20,33 +21,44 @@ form.addEventListener("submit", (event) => {
   if (accessPending) return;
 
   const code = normalizeArchiveNumber(archiveInput.value);
-  if (code !== "0806") {
-    error.textContent = code === ""
-      ? "لطفا شماره بایگانی را وارد کنید."
-      : "شماره بایگانی در سامانه یافت نشد. اطلاعات واردشده را بررسی کنید.";
-    archiveInput.setAttribute("aria-invalid", "true");
-    archiveInput.focus();
-    return;
-  }
-
   accessPending = true;
   error.textContent = "";
   archiveInput.removeAttribute("aria-invalid");
   archiveInput.disabled = true;
   submitButton.disabled = true;
-  archiveInput.blur();
-  evidenceStatus.textContent = "مدرک E-02 تایید شد";
+  form.setAttribute("aria-busy", "true");
+  checkingStatus.textContent = "در حال بررسی…";
 
-  // Keep both confirmations readable without depending on animation events.
+  // A short checking state also guards rapid button and keyboard submissions.
   window.setTimeout(() => {
-    fileStatus.textContent = "دسترسی به پرونده فعال شد.";
+    form.removeAttribute("aria-busy");
+    checkingStatus.textContent = "";
+    if (code !== "0806") {
+      accessPending = false;
+      archiveInput.disabled = false;
+      submitButton.disabled = false;
+      error.textContent = code === ""
+        ? "لطفا شماره بایگانی را وارد کنید."
+        : "شماره بایگانی در سامانه یافت نشد. اطلاعات واردشده را بررسی کنید.";
+      archiveInput.setAttribute("aria-invalid", "true");
+      archiveInput.focus();
+      return;
+    }
+
+    archiveInput.blur();
+    evidenceStatus.innerHTML = 'مدرک <bdi dir="ltr">E-02</bdi> تایید شد';
+
+    // Keep both confirmations readable without depending on animation events.
     window.setTimeout(() => {
-      document.getElementById("access-view").hidden = true;
-      document.getElementById("destination-view").hidden = false;
-      document.title = "پرونده CASE 011";
-      document.getElementById("destination-title").focus();
-    }, 2200);
-  }, 2000);
+      fileStatus.textContent = "دسترسی به پرونده فعال شد.";
+      window.setTimeout(() => {
+        document.getElementById("access-view").hidden = true;
+        document.getElementById("destination-view").hidden = false;
+        document.title = "پرونده CASE 011";
+        document.getElementById("destination-title").focus();
+      }, 2200);
+    }, 2000);
+  }, 520);
 });
 
 archiveInput.addEventListener("input", () => {

@@ -19,7 +19,9 @@ public/
   entry-4/
 ```
 
-Each entry directory contains its own `index.html`, `styles.css`, `script.js`, and `assets/` directory. Empty asset directories are retained with `.gitkeep` files. `shared/foundation.css` provides typography, color tokens, basic controls, focus styles, and reduced-motion rules; entry-specific layout and behavior stay in their entry directory. No external fonts, libraries, or media services are required.
+Each entry directory contains its own `index.html`, `styles.css`, `script.js`, and `assets/` directory. Empty asset directories are retained with `.gitkeep` files. `shared/foundation.css` provides typography, color tokens, basic controls, focus styles, and reduced-motion rules; entry-specific layout and behavior stay in their entry directory. No external libraries or media services are required.
+
+Entry 1 uses a dark archival composition, an original decorative SVG, a brief checking state, and reduced-motion-aware transitions. Its self-hosted variable Vazirmatn font comes from the [official v33.003 release](https://github.com/rastikerdar/vazirmatn/tree/v33.003). The unmodified font and its SIL Open Font License are retained in `public/entry-1/assets/fonts/`. Font loading falls back to Tahoma and system sans-serif fonts.
 
 | Entry | Direct path |
 | --- | --- |

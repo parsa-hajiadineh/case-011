@@ -3,8 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#142738">
+  <meta name="theme-color" content="#0c1723">
   <title>سامانه ثبت مدارک</title>
+  <link rel="preload" href="assets/fonts/Vazirmatn-Variable.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="../shared/foundation.css">
   <link rel="stylesheet" href="styles.css">
   <script src="script.js" defer></script>
@@ -28,19 +29,44 @@
 
     <main class="portal-main">
       <section class="document-panel" id="access-view" aria-labelledby="access-title">
-        <div class="document-rule" aria-hidden="true"><span></span><span></span><span></span></div>
-        <h1 id="access-title">سامانه ثبت مدارک</h1>
-        <form id="archive-form" novalidate>
-          <label for="archive-number">شماره بایگانی را وارد کنید</label>
-          <input id="archive-number" name="archive-number" type="text" inputmode="numeric" enterkeyhint="go" autocomplete="off" spellcheck="false" dir="ltr" aria-describedby="archive-error">
-          <p class="field-error" id="archive-error" role="alert" aria-atomic="true"></p>
-          <button class="primary-button" id="submit-button" type="submit">بررسی شماره بایگانی</button>
-        </form>
-        <div class="access-status" id="access-status" role="status" aria-live="polite" aria-atomic="false" aria-relevant="additions text">
-          <p id="evidence-status"></p>
-          <p id="file-status"></p>
+        <div class="archive-visual" aria-hidden="true">
+          <div class="archive-orbit"></div>
+          <svg class="archive-drawing" viewBox="0 0 420 440" fill="none">
+            <defs>
+              <linearGradient id="folder-surface" x1="90" y1="120" x2="330" y2="390" gradientUnits="userSpaceOnUse"><stop stop-color="#31444f"/><stop offset="1" stop-color="#192c36"/></linearGradient>
+              <linearGradient id="paper-surface" x1="140" y1="80" x2="280" y2="330" gradientUnits="userSpaceOnUse"><stop stop-color="#354852"/><stop offset="1" stop-color="#243640"/></linearGradient>
+              <clipPath id="scan-bounds"><path d="M103 143h96l20 21h98v200H103z"/></clipPath>
+            </defs>
+            <g class="document-back"><path d="m132 81 163 17-26 242-163-17z" fill="#172833" stroke="#48616b"/><path d="m147 109 107 12m-110 16 107 12m-110 16 74 8" stroke="#536d75"/></g>
+            <g class="document-front"><path d="M144 66h129l35 36v225H144z" fill="url(#paper-surface)" stroke="#6b8389"/><path d="M273 66v36h35M167 128h107M167 144h107M167 160h63" stroke="#799095"/><rect x="167" y="188" width="107" height="72" rx="2" stroke="#617b81"/><path d="M181 208h79M181 223h79M181 238h48" stroke="#617b81"/></g>
+            <path d="M91 153h95l23 23h117v199H91z" fill="url(#folder-surface)" stroke="#6d8788"/>
+            <path d="M91 195h235M111 354h215" stroke="#536b72"/>
+            <rect x="121" y="224" width="174" height="83" rx="3" fill="#13252e" stroke="#526e73"/>
+            <text x="208" y="263" text-anchor="middle" fill="#d7e3dc" font-family="monospace" font-size="20" letter-spacing="3">CASE 011</text>
+            <path d="M156 282h105" stroke="#769a8a"/>
+            <g clip-path="url(#scan-bounds)"><path class="archive-scan" d="M95 145h232" stroke="#b1d6be" stroke-width="2"/></g>
+            <path d="M61 128v-18h18M340 128v-18h-18M61 374v18h18M340 374v18h-18" stroke="#557069"/>
+          </svg>
+          <span class="visual-index" dir="ltr">CASE / 011</span>
         </div>
-        <noscript><p class="field-error">برای بررسی شماره بایگانی، جاوااسکریپت مرورگر را فعال کنید.</p></noscript>
+        <div class="access-form-panel">
+          <div class="document-rule" aria-hidden="true"><span></span><span></span><span></span></div>
+          <h1 id="access-title">سامانه ثبت مدارک</h1>
+          <form id="archive-form" novalidate>
+            <label for="archive-number">شماره بایگانی را وارد کنید</label>
+            <input id="archive-number" name="archive-number" type="text" inputmode="numeric" enterkeyhint="go" autocomplete="off" spellcheck="false" dir="ltr" aria-describedby="archive-error">
+            <div class="feedback-slot">
+              <p class="field-error" id="archive-error" role="alert" aria-atomic="true"></p>
+              <div class="access-status" id="access-status" role="status" aria-live="polite" aria-atomic="false" aria-relevant="additions text">
+                <p class="checking-status" id="checking-status"></p>
+                <p class="confirmation"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m7 12 3 3 7-7" pathLength="1"/></svg><span id="evidence-status"></span></p>
+                <p class="confirmation"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m7 12 3 3 7-7" pathLength="1"/></svg><span id="file-status"></span></p>
+              </div>
+            </div>
+            <button class="primary-button" id="submit-button" type="submit"><span class="button-label">بررسی شماره بایگانی</span><svg class="button-arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M19 12H5m6-6-6 6 6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="button-spinner" aria-hidden="true"></span></button>
+          </form>
+          <noscript><p class="field-error">برای بررسی شماره بایگانی، جاوااسکریپت مرورگر را فعال کنید.</p></noscript>
+        </div>
       </section>
 
       <section class="document-panel destination" id="destination-view" aria-labelledby="destination-title" hidden>
