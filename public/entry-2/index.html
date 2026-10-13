@@ -17,11 +17,12 @@
         <svg class="lab-mark" viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M10 3h12M12 3v10L5 25a3 3 0 0 0 3 4h16a3 3 0 0 0 3-4l-7-12V3M9 21h14"/><path d="M13 24h2m4 0h2"/></svg>
         <div class="lab-title-block">
           <p class="institution-title">سامانه بایگانی و ثبت الگوهای ژنتیکی نمونه‌های زیستی</p>
-          <div class="lab-secondary"><p class="database-identifier" dir="ltr">PATTERN DATABASE</p><span class="case-identifier" dir="ltr">CASE 011</span></div>
+          <div class="lab-secondary"><p class="database-identifier" dir="ltr">PATTERN DATABASE</p><span class="case-identifier" dir="ltr">CASE 011<button id="sound-toggle" class="sound-toggle" type="button" aria-label="روشن کردن صدا" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"/><path class="sound-muted" d="m17 9 5 6m0-6-5 6"/><path class="sound-enabled" d="M16 8a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14"/></svg></button></span></div>
         </div>
       </div>
     </header>
 
+    <p id="sound-status" class="sound-status" role="status" aria-live="polite"></p>
     <main>
       <div class="database-layout" id="database-view">
       <section class="comparison-panel" aria-labelledby="comparison-title" tabindex="0">

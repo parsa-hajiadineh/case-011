@@ -25,7 +25,16 @@ body::before { content: ""; position: fixed; inset: 0; z-index: -1; pointer-even
 .institution-title { font-size: clamp(.95rem, 2vw, 1.1rem); font-weight: 550; line-height: 1.9; }
 .lab-secondary { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin-top: 4px; }
 .database-identifier { color: var(--muted); text-align: right; font: .72rem "Segoe UI", Arial, sans-serif; letter-spacing: .1em; }
-.case-identifier { color: var(--muted); font: .75rem "Segoe UI", Arial, sans-serif; letter-spacing: .12em; border-inline-start: 1px solid var(--border); padding-inline-start: 16px; }
+.case-identifier { position: relative; color: var(--muted); font: .75rem "Segoe UI", Arial, sans-serif; letter-spacing: .12em; border-inline-start: 1px solid var(--border); padding-inline-start: 16px; }
+.sound-toggle { position: absolute; right: calc(100% + 4px); top: -3px; display: flex; align-items: flex-start; justify-content: center; width: 44px; height: 40px; padding: 2px 0 0; border: 0; border-radius: 4px; background: transparent; color: var(--muted); }
+.sound-toggle svg { width: 18px; height: 18px; stroke: currentColor; stroke-width: 1.45; stroke-linecap: round; stroke-linejoin: round; }
+.sound-toggle:hover { color: var(--paper); background: #a0c2af12; }
+.sound-toggle:active { background: #a0c2af26; }
+.sound-toggle:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+.sound-toggle[aria-pressed="true"] { color: var(--green); }
+.sound-enabled, .sound-toggle[aria-pressed="true"] .sound-muted { display: none; }
+.sound-toggle[aria-pressed="true"] .sound-enabled { display: block; }
+.sound-status { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .database-layout { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); grid-template-areas: "comparison output"; align-items: start; gap: 24px; padding-top: 36px; }
 .comparison-panel, .output-panel { min-width: 0; border: 1px solid var(--border); border-radius: 9px; background: linear-gradient(135deg, #1c2e3a, #142431); box-shadow: 0 16px 40px #0002, inset 0 1px #e8f1ef05; animation: entrance 460ms 70ms ease-out both; }
 .comparison-panel { grid-area: comparison; padding: 26px; }
@@ -141,6 +150,7 @@ h1 { font-size: clamp(1.2rem, 3vw, 1.5rem); font-weight: 600; }
 @media (max-width: 900px) {
   .laboratory { width: min(calc(100% - 24px - env(safe-area-inset-left) - env(safe-area-inset-right)), 520px); padding-bottom: max(12px, env(safe-area-inset-bottom)); }
   .lab-header { padding-block: 8px; }
+  .sound-toggle { top: -4px; height: 26px; padding-top: 2px; }
   .institution-title { font-size: .9rem; line-height: 1.65; }
   .database-layout { --output-height: clamp(7rem, 20dvh, 10.5rem); --panel-space: calc(100dvh - var(--header-height, 6rem) - env(safe-area-inset-top) - max(12px, env(safe-area-inset-bottom)) - 16px); grid-template-columns: minmax(0, 1fr); grid-template-areas: "output" "comparison"; gap: 8px; padding-top: 8px; }
   .comparison-panel { display: flex; flex-direction: column; height: max(160px, calc(var(--panel-space) - var(--output-height))); padding: 10px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #769c91 #172832; }

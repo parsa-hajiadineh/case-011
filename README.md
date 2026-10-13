@@ -20,6 +20,8 @@ After the warning transition and a two-second reading interval, entry 2 offers a
 
 Entries 3-4 remain empty scaffolds. QR codes and hosting are not implemented.
 
+Entry 2 has an optional icon-only sound toggle beside its header case reference. It creates one Web Audio context only after explicit activation, using quiet filtered ventilation noise and instrument tones. Sound preference carries through internal views; hidden pages suspend audio, and returning resumes only an enabled preference. Failed activation leaves the control off with an accessible status message.
+
 ## Structure
 
 ```text

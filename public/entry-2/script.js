@@ -1,5 +1,111 @@
 "use strict";
 
+const soundToggle = document.getElementById("sound-toggle");
+const soundStatus = document.getElementById("sound-status");
+let laboratoryAudio = null;
+let ambienceGain = null;
+let soundRequested = false;
+let soundRevision = 0;
+
+function renderSound(enabled) {
+  soundToggle.setAttribute("aria-pressed", String(enabled));
+  soundToggle.setAttribute("aria-label", enabled ? "خاموش کردن صدا" : "روشن کردن صدا");
+}
+
+function createLaboratoryAudio() {
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextClass) throw new Error("Web Audio is unavailable");
+  laboratoryAudio = new AudioContextClass();
+  ambienceGain = laboratoryAudio.createGain();
+  ambienceGain.gain.value = 0;
+  ambienceGain.connect(laboratoryAudio.destination);
+
+  // Original soft ventilation texture and steady instrument tones, without cues.
+  const buffer = laboratoryAudio.createBuffer(1, laboratoryAudio.sampleRate * 4, laboratoryAudio.sampleRate);
+  const samples = buffer.getChannelData(0);
+  for (let index = 0; index < samples.length; index++) samples[index] = Math.random() * 2 - 1;
+  const ventilation = laboratoryAudio.createBufferSource();
+  ventilation.buffer = buffer;
+  ventilation.loop = true;
+  const filter = laboratoryAudio.createBiquadFilter();
+  filter.type = "bandpass";
+  filter.frequency.value = 430;
+  filter.Q.value = 0.6;
+  const textureGain = laboratoryAudio.createGain();
+  textureGain.gain.value = 0.08;
+  ventilation.connect(filter).connect(textureGain).connect(ambienceGain);
+  ventilation.start();
+  for (const frequency of [96, 144]) {
+    const oscillator = laboratoryAudio.createOscillator();
+    const toneGain = laboratoryAudio.createGain();
+    oscillator.type = "sine";
+    oscillator.frequency.value = frequency;
+    toneGain.gain.value = 0.012;
+    oscillator.connect(toneGain).connect(ambienceGain);
+    oscillator.start();
+  }
+}
+
+function setAmbienceLevel(level) {
+  if (!ambienceGain) return;
+  ambienceGain.gain.cancelScheduledValues(laboratoryAudio.currentTime);
+  ambienceGain.gain.setValueAtTime(level, laboratoryAudio.currentTime);
+}
+
+function audioUnavailable(revision) {
+  if (revision !== soundRevision) return;
+  soundRequested = false;
+  setAmbienceLevel(0);
+  renderSound(false);
+  soundStatus.textContent = "پخش صدا در این مرورگر در دسترس نیست.";
+}
+
+async function enableAmbience(revision) {
+  try {
+    if (!laboratoryAudio) createLaboratoryAudio();
+    await laboratoryAudio.resume();
+    if (revision !== soundRevision || !soundRequested || document.hidden) {
+      if (!soundRequested || document.hidden) await laboratoryAudio.suspend();
+      return;
+    }
+    if (laboratoryAudio.state !== "running") throw new Error("Audio activation was blocked");
+    setAmbienceLevel(0.35);
+    renderSound(true);
+    soundStatus.textContent = "";
+  } catch {
+    audioUnavailable(revision);
+  }
+}
+
+soundToggle.addEventListener("click", () => {
+  soundRequested = !soundRequested;
+  const revision = ++soundRevision;
+  if (soundRequested) {
+    // Resume directly from the explicit user gesture, before any unrelated work.
+    void enableAmbience(revision);
+  } else {
+    setAmbienceLevel(0);
+    renderSound(false);
+    if (laboratoryAudio) void laboratoryAudio.suspend().catch(() => audioUnavailable(revision));
+  }
+});
+
+function synchronizeAudioVisibility() {
+  if (!laboratoryAudio) return;
+  if (document.hidden) {
+    setAmbienceLevel(0);
+    void laboratoryAudio.suspend().catch(() => audioUnavailable(soundRevision));
+  } else if (soundRequested) {
+    void enableAmbience(soundRevision);
+  }
+}
+document.addEventListener("visibilitychange", synchronizeAudioVisibility);
+window.addEventListener("pagehide", () => {
+  setAmbienceLevel(0);
+  if (laboratoryAudio) void laboratoryAudio.suspend().catch(() => audioUnavailable(soundRevision));
+});
+window.addEventListener("pageshow", synchronizeAudioVisibility);
+
 const comparisonForm = document.getElementById("comparison-form");
 const slots = [...document.querySelectorAll(".operator-slot")];
 const operatorKeys = [...document.querySelectorAll(".operator-key")];
