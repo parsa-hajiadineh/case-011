@@ -73,6 +73,9 @@ const soundControl = document.getElementById("sound-control");
 let documentsUnlocked = false;
 let suspectScrollPosition = 0;
 let suspectReturnFocus = "open-evidence";
+let activeCategoryKey = null;
+let categoryScrollPosition = 0;
+let categoryReturnFocus = "category-title";
 
 function renderDocumentsControl() {
   documentsButton.disabled = !documentsUnlocked;
@@ -146,14 +149,17 @@ for (const button of categoryPanel.querySelectorAll("button")) {
     if (!documentsUnlocked || categoryPanel.hidden || document.getElementById("destination-view").hidden) return;
     suspectScrollPosition = window.scrollY;
     suspectReturnFocus = button.id;
+    activeCategoryKey = button.dataset.category;
+    categoryScrollPosition = 0;
     const title = button.textContent;
     document.getElementById("category-title").textContent = title;
     const list = document.getElementById("document-list");
     list.replaceChildren();
-    for (const record of documentCategories[button.dataset.category]) {
+    for (const [index, record] of documentCategories[activeCategoryKey].entries()) {
       const item = document.createElement("li");
       const open = document.createElement("button");
       open.type = "button";
+      open.id = `document-${activeCategoryKey}-${index}`;
       open.className = "document-control document-item";
       open.textContent = record.title;
       open.disabled = true;
@@ -179,6 +185,8 @@ for (const button of categoryPanel.querySelectorAll("button")) {
         console.warn(`Expected PDF: public/entry-1/${record.url}`);
       });
       open.addEventListener("click", () => {
+        categoryScrollPosition = window.scrollY;
+        categoryReturnFocus = open.id;
         document.getElementById("pdf-title").textContent = record.title;
         document.getElementById("pdf-link").href = record.url;
         const frame = document.createElement("iframe");
@@ -195,6 +203,13 @@ for (const button of categoryPanel.querySelectorAll("button")) {
 
 document.getElementById("return-category").addEventListener("click", returnToSuspects);
 document.getElementById("return-pdf").addEventListener("click", returnToSuspects);
+
+document.getElementById("return-document-list").addEventListener("click", () => {
+  if (document.getElementById("pdf-view").hidden || !activeCategoryKey) return;
+  // Keep the originating list nodes and their availability state intact.
+  showInternalView("category-view", categoryReturnFocus,
+    document.getElementById("category-title").textContent, categoryScrollPosition);
+});
 
 for (const image of document.querySelectorAll(".suspect-portrait img")) {
   const showFallback = () => {

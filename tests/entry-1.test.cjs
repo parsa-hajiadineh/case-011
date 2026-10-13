@@ -235,6 +235,39 @@ test("all category controls and five document viewers return with scroll and foc
   assert.equal(f.get("sound-toggle").attributes["aria-pressed"], "true");
 });
 
+test("PDF return preserves its originating list, scroll, focus, and direct suspect shortcut", async () => {
+  const f = fixture();
+  f.unlock();
+  f.get("open-evidence").click();
+  f.get("return-suspects").click();
+  assert.equal(f.get("documents-lock-label"), undefined);
+  f.get("selected-documents").click();
+  f.window.scrollY = 400;
+  f.categories[2].click();
+  await settle();
+  const originalItems = f.get("document-list").children;
+  f.window.scrollY = 80;
+  originalItems[1].children[0].click();
+  assert.equal(f.get("pdf-container").children[0].src, "assets/evidence/cctv-footage-review-report.pdf");
+  f.get("return-document-list").click();
+  assert.equal(f.get("category-view").hidden, false);
+  assert.equal(f.get("document-list").children, originalItems);
+  assert.equal(f.window.scrollY, 80);
+  assert.equal(f.focused(), "document-kamran-1");
+  assert.equal(f.get("pdf-container").children.length, 0);
+  originalItems[0].children[0].click();
+  assert.equal(f.get("pdf-container").children[0].src, "assets/evidence/kamran-telecom-record.pdf");
+  f.get("return-document-list").click();
+  f.get("return-category").click();
+  assert.equal(f.get("destination-view").hidden, false);
+  assert.equal(f.get("document-categories").hidden, false);
+  assert.equal(f.get("selected-documents").attributes["aria-expanded"], "true");
+  assert.equal(f.get("selected-documents").disabled, false);
+  assert.equal(f.window.scrollY, 400);
+  assert.equal(f.focused(), "category-kamran");
+  assert(!/history\.back\(/.test(source));
+});
+
 test("missing PDFs retain every item with an unavailable state and exact expected path", async () => {
   const unavailable = expected.flatMap((category) => category.documents.map(([, filename]) => `assets/evidence/${filename}`));
   const f = fixture({ unavailable });
@@ -342,6 +375,7 @@ test("dossiers and PDF bytes are preserved; controls have no obsolete placement 
   assert(!/\bhidden\b/.test(documentsTag));
   assert(!/documents-notice|jump-to-documents/.test(html + source));
   assert(!/documents-state|برای دسترسی به مدارک/.test(html + source));
+  assert(!/documents-lock-label|return-categories/.test(html + source));
   assert(!html.includes("portal-footer"));
   const styles = fs.readFileSync(path.join(root, "public/entry-1/styles.css"), "utf8");
   assert(!/portal-footer|position:\s*fixed|padding-bottom:\s*120px/.test(styles));

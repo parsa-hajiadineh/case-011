@@ -5,7 +5,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const assert = require("node:assert/strict");
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-const output = path.resolve(__dirname, "../artifacts/entry-1-repair");
+const output = path.resolve(__dirname, "../.local-verification/entry-1");
 
 async function main() {
   const tabs = await (await fetch("http://127.0.0.1:9223/json/list")).json();
@@ -68,12 +68,16 @@ async function main() {
     console.log("INITIAL", JSON.stringify(initialState));
     for (const control of initialState.controls.slice(0, 2)) {
       assert.equal(control.height, 48);
-      assert(control.width < 240);
+      assert(control.width < 300);
     }
     assert(initialState.controls[0].x > initialState.controls[1].x);
     assert.equal(initialState.controls[0].y, initialState.controls[1].y);
     assert.equal(initialState.controls[2].height, 44);
     assert(initialState.controls[2].y > 0 && initialState.controls[2].y < 900);
+    assert.equal(await evaluate("getComputedStyle(document.getElementById('selected-documents')).backgroundColor"), "rgb(53, 35, 44)");
+    assert.equal(await evaluate("getComputedStyle(document.getElementById('documents-lock')).color"), "rgb(241, 160, 156)");
+    assert.equal(await evaluate("document.getElementById('documents-lock-label')"), null);
+    assert.equal(await evaluate("document.getElementById('return-categories')"), null);
     await click("#selected-documents");
     assert.equal(await evaluate("document.getElementById('document-categories').hidden"), true);
     await screenshot("desktop-actions-locked");
@@ -87,6 +91,7 @@ async function main() {
     assert.equal(await evaluate("document.getElementById('selected-documents').disabled"), false);
     assert.equal(await evaluate("document.getElementById('selected-documents').getAttribute('aria-disabled')"), "false");
     assert.equal(await evaluate("getComputedStyle(document.getElementById('documents-lock')).display"), "none");
+    assert.equal(await evaluate("getComputedStyle(document.getElementById('selected-documents')).backgroundColor"), "rgb(37, 67, 55)");
     await screenshot("desktop-actions-unlocked");
     await evaluate("window.scrollTo({top:0,behavior:'instant'})");
     await screenshot("desktop-heading");
@@ -113,10 +118,14 @@ async function main() {
       await click(`#category-${category}`);
       await waitFor("!document.getElementById('category-view').hidden");
       assert.equal(await evaluate("document.querySelectorAll('#document-list > li').length"), files.length);
+      assert.equal(await evaluate("document.querySelectorAll('#category-view .document-navigation button').length"), 1);
+      assert.equal(await evaluate("document.querySelectorAll('#pdf-view .document-navigation button').length"), 2);
       await click("#return-category");
+      assert.equal(await evaluate("document.getElementById('document-categories').hidden"), false);
       assert.equal(await evaluate("document.getElementById('selected-documents').disabled"), false);
-      for (let i = 0; i < files.length; i++) {
-        await click(`#category-${category}`);
+      await click(`#category-${category}`);
+      const order = category === "kamran" ? [1, 0] : files.map((_, index) => index);
+      for (const i of order) {
         await waitFor("document.querySelectorAll('#document-list button:not(:disabled)').length === " + files.length);
         await click(`#document-list > li:nth-child(${i + 1}) button`);
         await waitFor("!document.getElementById('pdf-view').hidden");
@@ -127,9 +136,20 @@ async function main() {
           await delay(1200);
           await screenshot("desktop-pdf");
         }
-        await click("#return-pdf");
+        for (const size of await evaluate("[...document.querySelectorAll('#pdf-view .document-navigation button')].map(e=>e.getBoundingClientRect().height)")) assert.equal(size, 48);
+        await click("#return-document-list");
+        assert.equal(await evaluate("document.getElementById('category-view').hidden"), false);
+        assert.equal(await evaluate("document.activeElement.id"), `document-${category}-${i}`);
+        assert.equal(await evaluate("document.querySelector('#pdf-container iframe') === null"), true);
+        assert.equal(await evaluate("audioContext === window.testAudioContext && soundEnabled"), true);
         assert.equal(await evaluate("document.getElementById('selected-documents').disabled"), false);
       }
+      await click("#document-list button");
+      await click("#return-pdf");
+      assert.equal(await evaluate("document.getElementById('destination-view').hidden"), false);
+      await click(`#category-${category}`);
+      await click("#return-category");
+      assert.equal(await evaluate("document.getElementById('destination-view').hidden"), false);
     }
     await click("#sound-toggle");
     await waitFor("!soundEnabled && audioContext.state === 'suspended'");
@@ -159,6 +179,22 @@ async function main() {
     assert.equal(await evaluate("document.documentElement.scrollWidth <= innerWidth"), true);
     await screenshot("mobile-actions-unlocked");
     await click("#selected-documents");
+    await click("#category-kamran");
+    await waitFor("document.querySelectorAll('#document-list button:not(:disabled)').length === 2");
+    await screenshot("mobile-document-list");
+    for (const i of [1, 0]) {
+      await click(`#document-list > li:nth-child(${i + 1}) button`);
+      await waitFor("!document.getElementById('pdf-view').hidden");
+      assert.equal(await evaluate("document.querySelector('#pdf-container iframe').getAttribute('src')"), "assets/evidence/" + (i === 1 ? "cctv-footage-review-report.pdf" : "kamran-telecom-record.pdf"));
+      for (const size of await evaluate("[...document.querySelectorAll('#pdf-view .document-navigation button')].map(e=>e.getBoundingClientRect().height)")) assert.equal(size, 48);
+      await screenshot("mobile-pdf-navigation");
+      await click("#return-document-list");
+      assert.equal(await evaluate("document.getElementById('category-view').hidden"), false);
+    }
+    await click("#return-category");
+    assert.equal(await evaluate("document.getElementById('document-categories').hidden"), false);
+    await click("#category-arash");
+    await click("#return-category");
     await click("#category-arash");
     await waitFor("!!document.querySelector('#document-list button:not(:disabled)')");
     await click("#document-list button");
@@ -167,7 +203,7 @@ async function main() {
     assert.equal(await evaluate("document.getElementById('selected-documents').disabled"), false);
     assert.equal(await evaluate("document.querySelectorAll('#sound-toggle').length"), 1);
     assert.equal(errors.length, 0);
-    console.log("PASS: real Edge clicks, disabled lock, evidence-return unlock, keyboard expansion, all five PDF routes, category/PDF returns, sound activation/mute and context preservation, reload reset, 390px compact layout and no horizontal overflow.");
+    console.log("PASS: real Edge clicks, red lock without status label, evidence-return unlock, keyboard expansion, all five PDFs and originating-list returns, CCTV to Kamran telecom, category/PDF suspect shortcuts, single category return and both PDF returns, sound preference/context, reload reset, desktop/390px navigation.");
   } finally { socket.close(); }
 }
 main().catch((error) => { console.error(error); process.exitCode = 1; });

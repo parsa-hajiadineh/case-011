@@ -246,13 +246,18 @@
       <section class="documents-view" id="category-view" aria-labelledby="category-title" hidden inert>
         <div class="view-heading title-heading"><h1 id="category-title" tabindex="-1"></h1><div class="sound-slot" id="sound-slot-category-view"></div></div>
         <ul class="document-list" id="document-list" aria-live="polite"></ul>
-        <button class="primary-button view-button" id="return-category" type="button">بازگشت به مظنونین</button>
+        <div class="document-navigation">
+          <button class="primary-button" id="return-category" type="button">بازگشت به مظنونین</button>
+        </div>
       </section>
 
       <section class="documents-view" id="pdf-view" aria-labelledby="pdf-title" hidden inert>
         <div class="view-heading title-heading"><h1 id="pdf-title" tabindex="-1"></h1><div class="sound-slot" id="sound-slot-pdf-view"></div></div>
         <div class="pdf-actions">
-          <button class="primary-button view-button" id="return-pdf" type="button">بازگشت به مظنونین</button>
+          <div class="document-navigation">
+            <button class="document-control" id="return-document-list" type="button">بازگشت به فهرست مدارک</button>
+            <button class="primary-button" id="return-pdf" type="button">بازگشت به مظنونین</button>
+          </div>
           <a class="document-control" id="pdf-link" target="_blank" rel="noopener">باز کردن فایل PDF</a>
         </div>
         <div id="pdf-container"></div>
