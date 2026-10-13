@@ -106,7 +106,15 @@ evidenceButton.addEventListener("click", () => {
 document.getElementById("return-suspects").addEventListener("click", () => {
   if (document.getElementById("evidence-view").hidden) return;
   documentsButton.hidden = false;
+  document.getElementById("documents-notice").hidden = false;
   returnToSuspects();
+});
+
+document.getElementById("jump-to-documents").addEventListener("click", (event) => {
+  event.preventDefault();
+  // Preserve return scroll position; move to the unlocked heading only on request.
+  documentsButton.focus({ preventScroll: true });
+  documentsButton.scrollIntoView({ block: "center", behavior: "instant" });
 });
 
 function returnToSuspects() {
@@ -194,8 +202,8 @@ let soundEnabled = false;
 function updateSoundLabel() {
   soundToggle.setAttribute("aria-pressed", String(soundEnabled));
   soundLabel.textContent = soundEnabled
-    ? "صدا روشن است · خاموش کردن"
-    : "صدا خاموش است · روشن کردن";
+    ? "صدا روشن"
+    : "صدا خاموش";
 }
 
 function createAmbientSound() {

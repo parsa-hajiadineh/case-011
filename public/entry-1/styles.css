@@ -24,13 +24,14 @@ body { min-height: 100vh; min-height: 100svh; background: var(--navy); color: va
   background-size: 120% 120%, 120% 120%, auto;
   animation: ambient-light 24s ease-in-out infinite alternate;
 }
-.portal-header { width: min(100%, 1080px); margin-inline: auto; display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 23px 0; border-bottom: 1px solid #91a8b126; animation: reveal 650ms ease-out both; }
+.portal-header { width: min(100%, 1080px); margin-inline: auto; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px 20px; padding: 23px 0; border-bottom: 1px solid #91a8b126; animation: reveal 650ms ease-out both; }
+.header-controls { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 12px; min-width: 0; }
 .identity { display: flex; align-items: center; gap: 13px; min-width: 0; }
 .institution-mark { width: 44px; height: 44px; flex-shrink: 0; color: #a0c2af; }
 .institution-name { font-size: .94rem; font-weight: 500; }
 .institution-caption { font-size: .8rem; color: var(--muted); }
 .case-tag { flex-shrink: 0; font-family: "Segoe UI", Arial, sans-serif; font-size: .8rem; letter-spacing: .14em; white-space: nowrap; color: #c1d3cc; border: 1px solid #647d7559; border-radius: 3px; padding: 6px 12px; }
-.portal-main { width: min(100%, 1040px); margin-inline: auto; padding: clamp(32px, 7vh, 72px) 0 0; }
+.portal-main { width: min(100%, 1040px); margin-inline: auto; padding: clamp(32px, 7vh, 72px) 0 32px; }
 #access-view { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); direction: ltr; border: 1px solid #5c74834d; border-radius: 12px; background: linear-gradient(125deg, #1e303d, #162632); box-shadow: 0 24px 80px #0004, inset 0 1px #e5f1f005; }
 .archive-visual { position: relative; display: grid; place-items: center; min-width: 0; overflow: hidden; border-inline-end: 1px solid #6b83902e; background: radial-gradient(ellipse at 50% 55%, #61857318, transparent 68%), repeating-linear-gradient(90deg, transparent 0 47px, #a5bec205 47px 48px); border-radius: 12px 0 0 12px; animation: reveal 900ms 120ms ease-out both; }
 .archive-orbit { position: absolute; width: 340px; aspect-ratio: 1; border: 1px solid #8aa99a15; border-radius: 50%; box-shadow: 0 0 0 36px #8aa99a04, 0 0 0 37px #8aa99a0b; }
@@ -73,20 +74,22 @@ input:disabled { opacity: 1; color: #bccdc5; background: #162731; border-color: 
 .button-spinner { display: none; width: 19px; height: 19px; border: 2px solid #cce0d34d; border-top-color: #e1eee6; border-radius: 50%; animation: spin 800ms linear infinite; }
 #archive-form[aria-busy="true"] .button-arrow { display: none; }
 #archive-form[aria-busy="true"] .button-spinner { display: block; }
-.portal-footer { width: min(100%, 1040px); margin-inline: auto; padding: 18px 0 24px; text-align: right; animation: reveal 650ms 400ms ease-out both; }
-.sound-button { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; padding: 8px 12px; border: 1px solid #6b83904d; border-radius: 6px; background: #192a35; color: #c3d0d6; font-size: .85rem; transition: background-color 200ms, border-color 200ms; }
+.sound-button { display: inline-flex; flex-shrink: 0; align-items: center; gap: 8px; min-height: 44px; padding: 8px 12px; border: 1px solid #6b83904d; border-radius: 6px; background: #192a35; color: #c3d0d6; font-size: .85rem; white-space: nowrap; transition: background-color 200ms, border-color 200ms; }
 .sound-button:hover { background: #243a46; border-color: #8ca39e; }
 .sound-button[aria-pressed="true"] { background: #254337; color: #dcf0e1; border-color: #719c81; }
 .sound-button svg { width: 20px; height: 20px; flex-shrink: 0; }
 .sound-button[aria-pressed="false"] svg { opacity: .7; }
-.sound-status { min-height: 1.8em; margin-top: 6px; font-size: .85rem; color: var(--muted); }
-.portal:has(#access-view[hidden]) { padding-bottom: 120px; }
-.portal:has(#access-view[hidden]) .portal-footer { position: fixed; z-index: 5; bottom: 0; left: 50%; transform: translateX(-50%); width: min(calc(100% - 64px), 1040px); padding-block: 12px; border-top: 1px solid #5c74834d; background: #0c1723f5; animation: none; }
+.sound-status { flex-basis: 100%; font-size: .85rem; color: var(--muted); }
+.sound-status:empty { display: none; }
 :focus-visible { outline: 3px solid #b5dbc2; outline-offset: 4px; }
 .view-heading { margin-bottom: 28px; padding-bottom: 22px; border-bottom: 1px solid #5c74834d; }
 .view-heading h2 { margin: 10px 0 0; color: var(--muted); font-size: 1.05rem; font-weight: 500; }
 .suspect-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 18px; }
 .suspect-heading > div:first-child { min-width: 0; }
+#selected-documents { margin-inline-start: auto; }
+.suspect-actions { flex-direction: column; align-items: center; gap: 10px; }
+.documents-jump { display: inline-block; min-height: 44px; padding: 8px; color: #c5dfcf; text-underline-offset: 4px; text-align: center; border-radius: 4px; }
+.documents-jump:hover { background: #b7ddc408; }
 .document-control { display: inline-block; min-height: 48px; max-width: 100%; padding: 10px 16px; border: 1px solid #718995; border-radius: 6px; background: #192a35; color: #c5dfcf; text-align: start; text-decoration: none; overflow-wrap: anywhere; transition: background-color 180ms, border-color 180ms; }
 .document-control:hover:not(:disabled), .document-control[aria-expanded="true"] { background: #243a46; border-color: #a0c2af; }
 .document-control:disabled { color: var(--muted); }
@@ -158,8 +161,8 @@ input:disabled { opacity: 1; color: #bccdc5; background: #162731; border-color: 
   .archive-visual { display: none; }
   .access-form-panel { padding: 30px 28px; }
   #access-title { font-size: 1.85rem; }
-  .portal-footer { max-width: 480px; }
-  .portal:has(#access-view[hidden]) .portal-footer { width: min(calc(100% - 40px), 480px); }
+  .portal-header .identity { flex-basis: 100%; }
+  .header-controls { margin-inline-start: auto; }
 }
 @media (max-width: 440px) {
   .portal { padding-inline: 16px; }
@@ -177,7 +180,6 @@ input:disabled { opacity: 1; color: #bccdc5; background: #162731; border-color: 
   .dossier-identity h3 { font-size: 1.15rem; }
   .dossier-meta > div { grid-template-columns: 105px minmax(0, 1fr); gap: 10px; }
   .evidence-view { padding: 26px 22px; }
-  .portal:has(#access-view[hidden]) .portal-footer { width: calc(100% - 32px); }
 }
 @media (max-height: 600px) { .portal-main { padding-top: 20px; } }
 @media (prefers-reduced-motion: reduce) {
