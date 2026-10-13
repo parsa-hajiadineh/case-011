@@ -56,7 +56,7 @@
             <div class="sound-slot" id="sound-slot-access-view">
               <div class="sound-control" id="sound-control">
                 <button class="sound-button" id="sound-toggle" type="button" aria-pressed="false" aria-describedby="sound-status">
-                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4Z M17 8a6 6 0 0 1 0 8 M20 5a10 10 0 0 1 0 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><g stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4Z"/><path class="sound-muted-icon" d="m17 9 5 6m0-6-5 6"/><path class="sound-enabled-icon" d="M17 8a6 6 0 0 1 0 8M20 5a10 10 0 0 1 0 14"/></g></svg>
                   <span id="sound-label">صدا خاموش</span>
                 </button>
                 <p id="sound-status" class="sound-status" role="status" aria-live="polite"></p>
@@ -265,7 +265,8 @@
     </main>
 
   </div>
-  <dialog class="locked-documents-dialog" id="locked-documents-dialog" aria-labelledby="locked-documents-message">
+  <div class="locked-dialog-backdrop" id="locked-dialog-backdrop" hidden aria-hidden="true"></div>
+  <dialog class="locked-documents-dialog" id="locked-documents-dialog" role="dialog" aria-modal="true" aria-labelledby="locked-documents-message">
     <p id="locked-documents-message">این دکمه توسط کاراگاه در این مرحله قفل شده است.</p>
     <button class="document-control" id="confirm-locked-documents" type="button" autofocus>تأیید</button>
   </dialog>

@@ -385,6 +385,9 @@ test("dossiers and PDF bytes are preserved; controls have no obsolete placement 
   assert(!/documents-lock-label|return-categories/.test(html + source));
   assert(!html.includes("portal-footer"));
   const styles = fs.readFileSync(path.join(root, "public/entry-1/styles.css"), "utf8");
-  assert(!/portal-footer|position:\s*fixed|padding-bottom:\s*120px/.test(styles));
+  assert(!/portal-footer|padding-bottom:\s*120px/.test(styles));
+  // Only the compatibility modal and its backdrop may use fixed positioning.
+  const nonModalStyles = styles.replace(/\.locked-(?:dialog-backdrop|documents-dialog\[data-fallback="true"\]\[open\])\s*\{[^}]*\}/g, "");
+  assert(!/position:\s*fixed/.test(nonModalStyles));
   assert(!/localStorage|sessionStorage/.test(source));
 });

@@ -69,6 +69,8 @@ const evidenceButton = document.getElementById("open-evidence");
 const documentsButton = document.getElementById("selected-documents");
 const lockedDocumentsDialog = document.getElementById("locked-documents-dialog");
 const confirmLockedDocuments = document.getElementById("confirm-locked-documents");
+const lockedDialogBackdrop = document.getElementById("locked-dialog-backdrop");
+const nativeLockedDialog = typeof lockedDocumentsDialog.showModal === "function";
 const categoryPanel = document.getElementById("document-categories");
 const pdfContainer = document.getElementById("pdf-container");
 const soundControl = document.getElementById("sound-control");
@@ -142,7 +144,15 @@ documentsButton.addEventListener("click", () => {
   if (document.getElementById("destination-view").hidden) return;
   if (!documentsUnlocked) {
     if (!lockedDocumentsDialog.open) {
-      lockedDocumentsDialog.showModal();
+      if (nativeLockedDialog) lockedDocumentsDialog.showModal();
+      else {
+        // Older mobile browsers still need a visible, keyboard-contained modal.
+        lockedDialogBackdrop.hidden = false;
+        lockedDocumentsDialog.setAttribute("data-fallback", "true");
+        lockedDocumentsDialog.setAttribute("open", "");
+        lockedDocumentsDialog.open = true;
+        document.querySelector(".portal").inert = true;
+      }
       confirmLockedDocuments.focus();
     }
     return;
@@ -151,8 +161,33 @@ documentsButton.addEventListener("click", () => {
   renderDocumentsControl();
 });
 
-confirmLockedDocuments.addEventListener("click", () => lockedDocumentsDialog.close());
+function closeLockedDocuments() {
+  if (nativeLockedDialog) lockedDocumentsDialog.close();
+  else {
+    lockedDocumentsDialog.removeAttribute("open");
+    lockedDocumentsDialog.open = false;
+    lockedDialogBackdrop.hidden = true;
+    document.querySelector(".portal").inert = false;
+    documentsButton.focus({ preventScroll: true });
+  }
+}
+confirmLockedDocuments.addEventListener("click", closeLockedDocuments);
 lockedDocumentsDialog.addEventListener("close", () => documentsButton.focus({ preventScroll: true }));
+document.addEventListener("keydown", (event) => {
+  if (nativeLockedDialog || !lockedDocumentsDialog.open) return;
+  if (event.key === "Escape") {
+    event.preventDefault();
+    closeLockedDocuments();
+  } else if (event.key === "Tab") {
+    event.preventDefault();
+    confirmLockedDocuments.focus();
+  }
+});
+document.addEventListener("focusin", () => {
+  if (!nativeLockedDialog && lockedDocumentsDialog.open && document.activeElement !== confirmLockedDocuments) {
+    confirmLockedDocuments.focus();
+  }
+});
 
 for (const button of categoryPanel.querySelectorAll("button")) {
   button.id = `category-${button.dataset.category}`;
@@ -237,9 +272,12 @@ const soundStatus = document.getElementById("sound-status");
 let audioContext;
 let ambientGain;
 let soundEnabled = false;
+let soundRequested = false;
+let soundRevision = 0;
 
 function updateSoundLabel() {
   soundToggle.setAttribute("aria-pressed", String(soundEnabled));
+  soundToggle.setAttribute("aria-label", soundEnabled ? "خاموش کردن صدا" : "روشن کردن صدا");
   soundLabel.textContent = soundEnabled
     ? "صدا روشن"
     : "صدا خاموش";
@@ -270,6 +308,7 @@ function silenceAudio() {
 }
 
 function audioUnavailable() {
+  soundRequested = false;
   soundEnabled = false;
   silenceAudio();
   if (audioContext) audioContext.suspend().catch(() => {});
@@ -279,14 +318,16 @@ function audioUnavailable() {
 
 function syncAudio() {
   if (!audioContext) return;
-  if (!soundEnabled || document.hidden) {
+  const revision = soundRevision;
+  if (!soundRequested || document.hidden) {
     silenceAudio();
     audioContext.suspend().catch(() => {});
     return;
   }
   audioContext.resume().then(() => {
     // A mute or visibility change can occur while resume is pending.
-    if (!soundEnabled || document.hidden) {
+    if (revision !== soundRevision) return;
+    if (!soundRequested || document.hidden) {
       silenceAudio();
       return audioContext.suspend().catch(() => {});
     }
@@ -295,22 +336,30 @@ function syncAudio() {
       return;
     }
     ambientGain.gain.setTargetAtTime(0.008, audioContext.currentTime, 0.4);
+    soundEnabled = true;
+    updateSoundLabel();
   }).catch(() => {
-    if (soundEnabled) audioUnavailable();
+    if (revision === soundRevision && soundRequested) audioUnavailable();
   });
 }
 
 soundToggle.addEventListener("click", () => {
   soundStatus.textContent = "";
-  soundEnabled = !soundEnabled;
-  updateSoundLabel();
+  soundRequested = !soundRequested;
+  soundRevision++;
+  if (!soundRequested) {
+    soundEnabled = false;
+    updateSoundLabel();
+  }
   try {
-    if (soundEnabled && !audioContext) createAmbientSound();
+    if (soundRequested && !audioContext) createAmbientSound();
+    // No await, timer, or deferred work precedes resume in this user gesture.
     syncAudio();
   } catch {
     audioUnavailable();
   }
 });
+updateSoundLabel();
 
 document.addEventListener("visibilitychange", syncAudio);
 window.addEventListener("pagehide", () => {

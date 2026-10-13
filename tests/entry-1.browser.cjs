@@ -59,6 +59,111 @@ async function main() {
     await send("Page.enable");
     await send("Network.enable");
     await send("Network.setCacheDisabled", { cacheDisabled: true });
+    if (process.argv.includes("--audio-failures")) {
+      await send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 1, mobile: true });
+      await send("Emulation.setTouchEmulationEnabled", { enabled: true, maxTouchPoints: 1 });
+      for (const [name, source] of [
+        ["unsupported", "window.AudioContext=undefined;window.webkitAudioContext=undefined;"],
+        ["rejected", "AudioContext.prototype.resume=()=>Promise.reject(new Error('Blocked activation test'));"],
+      ]) {
+        const injection = await send("Page.addScriptToEvaluateOnNewDocument", { source });
+        const previousDocument = await evaluate("performance.timeOrigin");
+        await send("Page.navigate", { url: "http://localhost:8000/entry-1/" });
+        await waitFor(`performance.timeOrigin!==${previousDocument} && document.readyState==='complete'`);
+        await delay(1100);
+        const point = await evaluate("(()=>{const r=document.getElementById('sound-toggle').getBoundingClientRect();return{x:r.x+r.width/2,y:r.y+r.height/2}})()");
+        await send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{...point,radiusX:5,radiusY:5,force:1}] });
+        await send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+        await waitFor("document.getElementById('sound-status').textContent.length>0");
+        assert.equal(await evaluate("document.getElementById('sound-toggle').getAttribute('aria-pressed')"), "false");
+        assert.equal(await evaluate("document.getElementById('sound-label').textContent"), "صدا خاموش");
+        assert.equal(await evaluate("getComputedStyle(document.getElementById('sound-status')).display !== 'none'"), true);
+        await screenshot(`touch-audio-${name}`);
+        await send("Page.removeScriptToEvaluateOnNewDocument", { identifier: injection.identifier });
+        console.log(`PASS ${name}: touch activation retains muted UI and displays readable Persian error.`);
+      }
+      await send("Emulation.setTouchEmulationEnabled", { enabled: false });
+      assert.equal(errors.length, 0);
+      return;
+    }
+    if (process.argv.includes("--touch-flow")) {
+      if (process.argv.includes("--fallback-dialog")) {
+        await send("Page.addScriptToEvaluateOnNewDocument", { source: "HTMLDialogElement.prototype.showModal=undefined;" });
+      }
+      await send("Emulation.setTouchEmulationEnabled", { enabled: true, maxTouchPoints: 1 });
+      const tap = async (selector) => {
+        await evaluate(`document.querySelector(${JSON.stringify(selector)}).scrollIntoView({block:'center',behavior:'instant'})`);
+        const point = await evaluate(`(()=>{const e=document.querySelector(${JSON.stringify(selector)}),r=e.getBoundingClientRect(),x=r.x+r.width/2,y=r.y+r.height/2;return{x,y,hit:e.contains(document.elementFromPoint(x,y)),pointer:getComputedStyle(e).pointerEvents}})()`);
+        assert.equal(point.hit, true, `${selector}: no overlapping hit target`);
+        assert.notEqual(point.pointer, "none");
+        await send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x: point.x, y: point.y, radiusX: 5, radiusY: 5, force: 1 }] });
+        await delay(70);
+        await send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+      };
+      for (const width of [360,390]) {
+        await send("Emulation.setDeviceMetricsOverride", { width, height: width === 360 ? 640 : 844, deviceScaleFactor: 1, mobile: true });
+        const previousDocument = await evaluate("performance.timeOrigin");
+        await send("Page.navigate", { url: "http://localhost:8000/entry-1/" });
+        await waitFor(`performance.timeOrigin!==${previousDocument} && document.readyState==='complete' && !!document.getElementById('sound-toggle')`);
+        await delay(1100);
+        assert.equal(await evaluate("navigator.maxTouchPoints"), 1);
+        assert.equal(await evaluate("matchMedia('(hover:hover)').matches"), false);
+        await tap("#sound-toggle");
+        await waitFor("document.getElementById('sound-toggle').getAttribute('aria-pressed')==='true' && audioContext.state==='running'");
+        assert.equal(await evaluate("document.getElementById('sound-label').textContent"), "صدا روشن");
+        assert.equal(await evaluate("getComputedStyle(document.querySelector('.sound-enabled-icon')).display"), "block");
+        assert.equal(await evaluate("getComputedStyle(document.querySelector('.sound-muted-icon')).display"), "none");
+        await tap("#sound-toggle");
+        await waitFor("!soundEnabled && audioContext.state==='suspended'");
+        assert.equal(await evaluate("document.getElementById('sound-label').textContent"), "صدا خاموش");
+        assert.equal(await evaluate("getComputedStyle(document.querySelector('.sound-enabled-icon')).display"), "none");
+        await tap("#sound-toggle");
+        await waitFor("soundEnabled && audioContext.state==='running'");
+        await tap("#archive-number");
+        await send("Input.insertText", { text: "0806" });
+        await tap("#submit-button");
+        await waitFor("!document.getElementById('destination-view').hidden");
+        assert.equal(await evaluate("document.getElementById('selected-documents').hasAttribute('disabled')"), false);
+        await tap("#selected-documents");
+        await waitFor("document.getElementById('locked-documents-dialog').open");
+        assert.equal(await evaluate("document.getElementById('locked-documents-message').textContent"), "این دکمه توسط کاراگاه در این مرحله قفل شده است.");
+        assert.equal(await evaluate("document.getElementById('document-categories').hidden"), true);
+        assert.equal(await evaluate("document.activeElement.id"), "confirm-locked-documents");
+        const modalBounds = await evaluate("(()=>{const r=document.getElementById('locked-documents-dialog').getBoundingClientRect();return{left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:innerWidth,height:innerHeight}})()");
+        assert(modalBounds.left >= 0 && modalBounds.right <= modalBounds.width && modalBounds.top >= 0 && modalBounds.bottom <= modalBounds.height);
+        if (process.argv.includes("--fallback-dialog")) {
+          assert.equal(await evaluate("getComputedStyle(document.getElementById('locked-documents-dialog')).position"), "fixed");
+          assert.equal(await evaluate("document.getElementById('locked-dialog-backdrop').hidden"), false);
+          await send("Input.dispatchKeyEvent", { type: "keyDown", key: "Tab", code: "Tab", windowsVirtualKeyCode: 9 });
+          await send("Input.dispatchKeyEvent", { type: "keyUp", key: "Tab", code: "Tab", windowsVirtualKeyCode: 9 });
+          assert.equal(await evaluate("document.activeElement.id"), "confirm-locked-documents");
+        }
+        await screenshot(`touch-${width}-locked-dialog`);
+        await tap("#confirm-locked-documents");
+        await waitFor("!document.getElementById('locked-documents-dialog').open");
+        assert.equal(await evaluate("document.activeElement.id"), "selected-documents");
+        await tap("#selected-documents");
+        await send("Input.dispatchKeyEvent", { type: "keyDown", key: "Escape", code: "Escape", windowsVirtualKeyCode: 27 });
+        await send("Input.dispatchKeyEvent", { type: "keyUp", key: "Escape", code: "Escape", windowsVirtualKeyCode: 27 });
+        await waitFor("!document.getElementById('locked-documents-dialog').open");
+        assert.equal(await evaluate("document.activeElement.id"), "selected-documents");
+        await tap("#open-evidence");
+        await waitFor("!document.getElementById('evidence-view').hidden");
+        assert.equal(await evaluate("document.getElementById('selected-documents').getAttribute('aria-disabled')"), "true");
+        await tap("#return-suspects");
+        await waitFor("document.getElementById('selected-documents').getAttribute('aria-disabled')==='false'");
+        await tap("#selected-documents");
+        assert.equal(await evaluate("document.getElementById('document-categories').hidden"), false);
+        await tap("#category-nora");
+        assert.equal(await evaluate("soundEnabled && audioContext.state==='running'"), true);
+        await tap("#sound-toggle");
+        await waitFor("!soundEnabled && audioContext.state==='suspended'");
+        assert.equal(errors.length, 0);
+        console.log(`PASS touch ${width}: real touch events, hit targets, sound on/off, locked modal/focus, evidence unlock, categories and audio preference; no runtime errors.`);
+      }
+      await send("Emulation.setTouchEmulationEnabled", { enabled: false });
+      return;
+    }
     await send("Emulation.setDeviceMetricsOverride", { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false });
     await send("Page.navigate", { url: "http://localhost:8000/entry-1/" });
     await waitFor("!!document.getElementById('archive-number')");
