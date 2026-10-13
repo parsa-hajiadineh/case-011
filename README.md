@@ -14,7 +14,7 @@ Dossiers retain the supplied Persian copy, use the four provided portraits, and 
 
 Entry 2 is an independent PATTERN DATABASE portal at `/entry-2/`. Four button-based comparison slots accept only `=` or `≠` from its keypad. Validation retains choices after errors; a successful submission locks controls and reveals the match, reference, and warning at 700 ms, 1900 ms, and 3100 ms. Status announcements contain only the newly revealed section. Entry 2 reuses the existing self-hosted Persian font without requiring archive access or adding navigation between entries.
 
-After the warning transition and a two-second reading interval, entry 2 offers an internal original-record view. Its corrupted-file notification uses a 15-second elapsed-time game sequence; pending callbacks are cancelled when leaving, while completed decoding survives internal returns. The decoded record contains only International Morse symbols generated from the ITU-R M.1677-1 alphabet. Record navigation is explicit, and hidden views are inert. No media playback or actual file decoding is involved.
+After the warning transition and a two-second reading interval, entry 2 offers an internal original-record view. Its corrupted-file notification uses a 15-second elapsed-time game sequence with a rotating segmented indicator and cyan scanning accent. Reduced motion uses one gentle opacity change instead of rotation. Record navigation is forward only; pending callbacks are cancelled on page exit, and hidden views are inert. The decoded record contains only International Morse symbols generated from the ITU-R M.1677-1 alphabet. No media playback or actual file decoding is involved.
 
 Entries 3-4 remain empty scaffolds. QR codes and hosting are not implemented.
 

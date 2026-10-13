@@ -105,8 +105,6 @@ let activeView = "database-view";
 let decodingComplete = false;
 let decodingTimer = null;
 let decodingGeneration = 0;
-let resultScrollPosition = 0;
-let originalScrollPosition = 0;
 
 function cancelDecoding() {
   window.clearTimeout(decodingTimer);
@@ -114,7 +112,7 @@ function cancelDecoding() {
   decodingGeneration++;
 }
 
-function showRecordView(viewId, focusId, scrollPosition = 0) {
+function showRecordView(viewId, focusId) {
   if (activeView === "original-record-view" && viewId !== activeView) cancelDecoding();
   activeView = viewId;
   for (const id of entryViews) {
@@ -125,7 +123,7 @@ function showRecordView(viewId, focusId, scrollPosition = 0) {
   document.title = viewId === "database-view" ? "PATTERN DATABASE · CASE 011"
     : viewId === "original-record-view" ? "ORIGINAL RECORD · CASE 011" : "DECODED RECORD · CASE 011";
   document.getElementById(focusId).focus({ preventScroll: true });
-  window.scrollTo({ top: scrollPosition, behavior: "instant" });
+  window.scrollTo({ top: 0, behavior: "instant" });
 }
 
 function renderDecodingState() {
@@ -157,26 +155,13 @@ function startDecoding() {
 
 originalRecordButton.addEventListener("click", () => {
   if (activeView !== "database-view" || originalRecordButton.hidden) return;
-  resultScrollPosition = window.scrollY;
   showRecordView("original-record-view", "corruption-notice");
   startDecoding();
 });
 
-document.getElementById("back-to-result").addEventListener("click", () => {
-  if (activeView !== "original-record-view") return;
-  showRecordView("database-view", "open-original-record", resultScrollPosition);
-});
-
 decodedRecordButton.addEventListener("click", () => {
   if (activeView !== "original-record-view" || !decodingComplete) return;
-  originalScrollPosition = window.scrollY;
   showRecordView("decoded-record-view", "decoded-record-title");
-});
-
-document.getElementById("back-to-original").addEventListener("click", () => {
-  if (activeView !== "decoded-record-view") return;
-  renderDecodingState();
-  showRecordView("original-record-view", "open-decoded-record", originalScrollPosition);
 });
 
 window.addEventListener("pagehide", cancelDecoding);

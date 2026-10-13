@@ -141,28 +141,13 @@ async function main() {
       console.log("PASS: 390px ready notification and Morse screenshots captured without full-page RTL cropping.");
       return;
     }
-    if (process.argv.includes("--duplicate-record")) {
-      await fill(["≠", "=", "≠", "≠"]);
-      await success();
-      await waitFor("!document.getElementById('open-original-record').hidden");
-      await click("#open-original-record", 2);
-      assert.equal(await read("activeView"), "original-record-view");
-      assert.equal(await read("decodingGeneration"), 1);
-      assert.equal(await read("document.querySelectorAll('#corruption-notice').length"), 1);
-      assert.equal(await read("document.getElementById('open-decoded-record').hidden"), true);
-      await delay(700);
-      assert.equal(await read("decodingGeneration"), 1);
-      await click("#back-to-result");
-      assert.equal(await read("decodingTimer === null"), true);
-      console.log("PASS: normal record-button double click creates one decoding generation and one dialog; leaving cancels its timer.");
-      return;
-    }
     if (process.argv.includes("--capture-desktop")) {
       console.log("Desktop bounds:", await read("document.querySelector('.laboratory').getBoundingClientRect().toJSON()"));
       await fill(["≠", "=", "≠", "≠"]);
       await success(true);
       return;
     }
+    if (!process.argv.includes("--forward-records")) {
     await click(".operator-slot[data-sample='B']");
     await send("Input.insertText", { text: "= arbitrary" });
     await press("=", "Equal", 187, "=");
@@ -226,8 +211,9 @@ async function main() {
       await click("#warning-output");
       await screenshot(`mobile-${width}-result`);
     }
-    const verifyRecordFlow = async (mobile = false) => {
-      const prefix = mobile ? "mobile-390" : "desktop";
+    }
+    const verifyRecordFlow = async (mobile = false, reduced = false) => {
+      const prefix = (mobile ? "mobile-390" : "desktop") + (reduced ? "-reduced" : "");
       const title = "سامانه بایگانی و ثبت الگوهای ژنتیکی نمونههای زیستی";
       assert.equal(await read("document.querySelector('.institution-title').textContent"), title);
       assert.equal(await read("document.querySelector('.lab-mark').getBoundingClientRect().left >= document.querySelector('.lab-title-block').getBoundingClientRect().right"), true);
@@ -243,7 +229,7 @@ async function main() {
       assert.equal(await read("document.getElementById('warning-output').hidden"), false);
       await screenshot(`${prefix}-record-action`);
 
-      // Leave an unfinished attempt and verify that it cannot update the result view.
+      const decodingStart = Date.now();
       await click("#open-original-record");
       await click("#corruption-notice");
       assert.equal(await read("document.getElementById('open-decoded-record').hidden"), true);
@@ -252,19 +238,28 @@ async function main() {
       assert.equal(await read("document.activeElement.id"), "corruption-notice");
       const centered = await read("(()=>{const a=document.querySelector('.record-shell').getBoundingClientRect(),b=document.querySelector('.corruption-notice').getBoundingClientRect();return Math.abs(a.x+a.width/2-b.x-b.width/2)<2&&Math.abs(a.y+a.height/2-b.y-b.height/2)<2})()");
       assert.equal(centered, true);
+      assert.equal(await read("document.querySelectorAll('.record-back,#back-to-result,#back-to-original').length"), 0);
+      assert.equal(await read("document.querySelectorAll('#original-record-view button').length"), 1);
+      const statusWhileLoading = await read("document.getElementById('record-status').textContent");
+      const firstTransform = await read("getComputedStyle(document.querySelector('.ring-rotor')).transform");
+      if (reduced) {
+        assert.equal(await read("getComputedStyle(document.querySelector('.ring-rotor')).animationName"), "none");
+        assert.equal(await read("getComputedStyle(document.querySelector('.ring-scan')).animationName"), "decoding-settle");
+        assert.equal(await read("getComputedStyle(document.querySelector('.ring-scan')).animationIterationCount"), "1");
+        const initialOpacity = await read("Number(getComputedStyle(document.querySelector('.ring-scan')).opacity)");
+        await delay(450);
+        assert.equal(await read("getComputedStyle(document.querySelector('.ring-rotor')).transform"), firstTransform);
+        assert(await read("Number(getComputedStyle(document.querySelector('.ring-scan')).opacity)") > initialOpacity);
+      } else {
+        assert.equal(await read("getComputedStyle(document.querySelector('.ring-rotor')).animationName"), "decoding-rotate");
+        assert.equal(await read("getComputedStyle(document.querySelector('.ring-rotor')).animationPlayState"), "running");
+        const firstTime = await read("document.querySelector('.ring-rotor').getAnimations()[0].currentTime");
+        await delay(450);
+        assert.notEqual(await read("getComputedStyle(document.querySelector('.ring-rotor')).transform"), firstTransform);
+        assert(await read("document.querySelector('.ring-rotor').getAnimations()[0].currentTime") > firstTime + 300);
+      }
+      assert.equal(await read("document.getElementById('record-status').textContent"), statusWhileLoading);
       await screenshot(`${prefix}-decoding`);
-      await delay(1000);
-      await click("#back-to-result");
-      const statusAfterExit = await read("document.getElementById('record-status').textContent");
-      assert.equal(await read("decodingTimer === null"), true);
-      // Wait past the abandoned deadline while the player stays in results.
-      await delay(14500);
-      assert.equal(await read("document.getElementById('open-decoded-record').hidden"), true);
-      assert.equal(await read("document.getElementById('record-status').textContent"), statusAfterExit);
-      assert.deepEqual(await hiddenResults(), [false, false, false]);
-
-      const decodingStart = Date.now();
-      await click("#open-original-record", 2);
       assert.equal(await read("document.getElementById('open-decoded-record').hidden"), true);
       assert.equal(await read("document.getElementById('corruption-title').textContent"), "File corrupted");
       assert.equal(await read("document.getElementById('corruption-description').textContent"), "Decoding required");
@@ -272,7 +267,8 @@ async function main() {
       assert.equal(await read("document.getElementById('open-decoded-record').hidden"), true);
       const readyTime = await waitFor("!document.getElementById('open-decoded-record').hidden", 40, 4000);
       assert(readyTime - decodingStart >= 14900 && readyTime - decodingStart <= 16000);
-      assert.equal(await read("getComputedStyle(document.querySelector('.ring-segments')).animationName"), "none");
+      assert.equal(await read("getComputedStyle(document.querySelector('.ring-rotor')).animationName"), "none");
+      assert.equal(await read("getComputedStyle(document.querySelector('.ring-scan')).animationName"), "none");
       assert.equal(await read("document.getElementById('corruption-title').textContent"), "File corrupted");
       await screenshot(`${prefix}-decoding-ready`);
       await click("#open-decoded-record");
@@ -289,28 +285,22 @@ async function main() {
       assert.equal(decoded, "TAKE THE KEY AND FIND THE CHAIN IN THE KITCHEN");
       assert.equal(await read("document.documentElement.scrollWidth <= innerWidth"), true);
       await screenshot(`${prefix}-decoded-record`);
-      await click("#back-to-original");
-      assert.equal(await read("document.getElementById('open-decoded-record').hidden"), false);
+      assert.equal(await read("document.querySelectorAll('#decoded-record-view button').length"), 0);
       assert.equal(await read("decodingTimer === null"), true);
-      assert.equal(await read("document.activeElement.id"), "open-decoded-record");
-      await click("#back-to-result");
-      assert.deepEqual(await hiddenResults(), [false, false, false]);
-      await click("#open-original-record");
-      assert.equal(await read("document.getElementById('open-decoded-record').hidden"), false);
-      assert.equal(await read("decodingTimer === null"), true);
-      await click("#back-to-result");
-      console.log(`PASS ${prefix}: warning reading delay ${actionTime - warningShown}ms; decoding ${readyTime - decodingStart}ms; cancellation beyond old deadline; exact independently decoded Morse; preserved completion, focus, result and explicit navigation.`);
+      console.log(`PASS ${prefix}: warning delay ${actionTime - warningShown}ms; decoding ${readyTime - decodingStart}ms; ${reduced ? "finite reduced-motion emphasis without rotation" : "verified changing transform and advancing rotation time"}; motion stops on completion; exact independently decoded Morse; forward only, focus and inert views.`);
     };
     await send("Emulation.setDeviceMetricsOverride", { width: 1280, height: 900, screenWidth: 1280, screenHeight: 900, deviceScaleFactor: 1, mobile: false });
     await send("Emulation.setEmulatedMedia", { features: [{ name: "prefers-reduced-motion", value: "no-preference" }] });
     await load();
     await verifyRecordFlow();
     await send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 1, mobile: false });
-    await send("Emulation.setEmulatedMedia", { features: [{ name: "prefers-reduced-motion", value: "reduce" }] });
     await load();
     await verifyRecordFlow(true);
+    await send("Emulation.setEmulatedMedia", { features: [{ name: "prefers-reduced-motion", value: "reduce" }] });
+    await load();
+    await verifyRecordFlow(true, true);
     assert.equal(errors.length, 0);
-    console.log("PASS: desktop and 360px/390px layouts, timed staged results, exact copy, duplicate-submit protection, disabled controls, reduced-motion sequence, no horizontal overflow or runtime exceptions. Screenshots saved under .local-verification/entry-2/.");
+    console.log("PASS: desktop/390px complete forward record flow, confirmed live rotation and finite reduced-motion alternative, timed results, exact copy, independent Morse decoding, no return controls, no horizontal overflow or runtime exceptions. Screenshots saved under .local-verification/entry-2/.");
   } finally { socket.close(); }
 }
 main().catch((error) => { console.error(error); process.exitCode = 1; });
