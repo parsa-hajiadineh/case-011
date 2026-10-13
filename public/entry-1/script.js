@@ -93,12 +93,12 @@ renderDocumentsControl();
 
 const documentCategories = {
   nora: [
-    { title: "نامه انگشتنگاری و پزشکی قانونی", url: "assets/evidence/nora-fingerprint-forensic-report.pdf" },
+    { title: "نامه انگشت‌نگاری و پزشکی قانونی", url: "assets/evidence/nora-fingerprint-forensic-report.pdf" },
     { title: "گزارش تحقیقات محلی", subtitle: "استعلام بانکی و مصاحبه حضوری با فروشنده سوپرمارکت", url: "assets/evidence/nora-local-inquiry-report.pdf" }
   ],
   arash: [{ title: "استعلام مخابرات", url: "assets/evidence/arash-telecom-record.pdf" }],
   kamran: [
-    { title: "استعلام مخابرات خط تلفن کامران", url: "assets/evidence/kamran-telecom-record.pdf" },
+    { title: "استعلام مخابرات خط تلفن کامران فرهمند", url: "assets/evidence/kamran-telecom-record.pdf" },
     { title: "گزارش بررسی تصویر دوربین مدار بسته", url: "assets/evidence/cctv-footage-review-report.pdf" }
   ]
 };
