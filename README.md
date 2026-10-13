@@ -4,7 +4,11 @@ CASE 011 is a mystery investigation game website with four independent entry pag
 
 ## Current status
 
-Entry 1 contains three internal views: archive access, four suspect dossiers, and physical-evidence requirements. The archive form accepts Latin, Persian, and Arabic-Indic digits, with inline validation and two timed access confirmations. The archive-number check is a client-side game mechanic, not authentication.
+Entry 1 contains archive access, four suspect dossiers, physical-evidence requirements, document categories, and a PDF viewer. The archive form accepts Latin, Persian, and Arabic-Indic digits, with inline validation and two timed access confirmations. The archive-number check is a client-side game mechanic, not authentication.
+
+Entry 1 also includes investigator-selected document categories and an internal native PDF viewer. The documents control is revealed only by returning from evidence requirements, and resets on a full reload. Category and viewer return actions preserve dossier disclosures, scroll position, and the optional sound setting. These are internal views, with no additional entry points.
+
+Original PDFs are retained in `public/entry-1/assets/evidence/`. Category lists check availability with HTTP HEAD requests; unavailable files retain their titles with a disabled control and an unavailable message. PDFs load only after selection. The viewer includes a separate-tab fallback link for devices without embedded PDF support. Serve this flow over HTTP with a static server that supports HEAD requests.
 
 Dossiers retain the supplied Persian copy, use the four provided portraits, and offer independent native statement disclosures. Motives contain decorative shapes and a restricted-access label only. Returning from evidence requirements preserves open statements and the dossier scroll position. Optional Web Audio ambience remains available across all views, starts only when enabled, and pauses while the page is hidden.
 

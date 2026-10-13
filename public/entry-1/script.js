@@ -64,11 +64,28 @@ archiveInput.addEventListener("input", () => {
   archiveInput.removeAttribute("aria-invalid");
 });
 
-const internalViews = ["access-view", "destination-view", "evidence-view"];
+const internalViews = ["access-view", "destination-view", "evidence-view", "category-view", "pdf-view"];
 const evidenceButton = document.getElementById("open-evidence");
+const documentsButton = document.getElementById("selected-documents");
+const categoryPanel = document.getElementById("document-categories");
+const pdfContainer = document.getElementById("pdf-container");
 let suspectScrollPosition = 0;
+let suspectReturnFocus = "open-evidence";
+
+const documentCategories = {
+  nora: [
+    { title: "نامه انگشتنگاری و پزشکی قانونی", url: "assets/evidence/nora-fingerprint-forensic-report.pdf" },
+    { title: "گزارش تحقیقات محلی", subtitle: "استعلام بانکی و مصاحبه حضوری با فروشنده سوپرمارکت", url: "assets/evidence/nora-local-inquiry-report.pdf" }
+  ],
+  arash: [{ title: "استعلام مخابرات", url: "assets/evidence/arash-telecom-record.pdf" }],
+  kamran: [
+    { title: "استعلام مخابرات خط تلفن کامران", url: "assets/evidence/kamran-telecom-record.pdf" },
+    { title: "گزارش بررسی تصویر دوربین مدار بسته", url: "assets/evidence/cctv-footage-review-report.pdf" }
+  ]
+};
 
 function showInternalView(viewId, focusId, title, scrollPosition = 0) {
+  if (viewId !== "pdf-view") pdfContainer.replaceChildren();
   for (const id of internalViews) {
     const view = document.getElementById(id);
     view.hidden = id !== viewId;
@@ -82,15 +99,81 @@ function showInternalView(viewId, focusId, title, scrollPosition = 0) {
 evidenceButton.addEventListener("click", () => {
   if (document.getElementById("destination-view").hidden) return;
   suspectScrollPosition = window.scrollY;
+  suspectReturnFocus = "open-evidence";
   showInternalView("evidence-view", "requirements-title", "EVIDENCE 03");
 });
 
 document.getElementById("return-suspects").addEventListener("click", () => {
   if (document.getElementById("evidence-view").hidden) return;
+  documentsButton.hidden = false;
+  returnToSuspects();
+});
+
+function returnToSuspects() {
   // Retain the existing nodes so native details elements keep their open state.
   document.getElementById("destination-view").setAttribute("data-restored", "true");
-  showInternalView("destination-view", "open-evidence", "پرونده CASE 011", suspectScrollPosition);
+  showInternalView("destination-view", suspectReturnFocus, "پرونده CASE 011", suspectScrollPosition);
+}
+
+documentsButton.addEventListener("click", () => {
+  categoryPanel.hidden = !categoryPanel.hidden;
+  documentsButton.setAttribute("aria-expanded", String(!categoryPanel.hidden));
 });
+
+for (const button of categoryPanel.querySelectorAll("button")) {
+  button.id = `category-${button.dataset.category}`;
+  button.addEventListener("click", () => {
+    suspectScrollPosition = window.scrollY;
+    suspectReturnFocus = button.id;
+    const title = button.textContent;
+    document.getElementById("category-title").textContent = title;
+    const list = document.getElementById("document-list");
+    list.replaceChildren();
+    for (const record of documentCategories[button.dataset.category]) {
+      const item = document.createElement("li");
+      const open = document.createElement("button");
+      open.type = "button";
+      open.className = "document-control document-item";
+      open.textContent = record.title;
+      open.disabled = true;
+      const status = document.createElement("p");
+      status.className = "document-status";
+      status.textContent = "در حال بررسی دسترسی به فایل…";
+      item.append(open);
+      if (record.subtitle) {
+        const subtitle = document.createElement("p");
+        subtitle.textContent = record.subtitle;
+        subtitle.className = "document-subtitle";
+        item.append(subtitle);
+      }
+      item.append(status);
+      list.append(item);
+      // HEAD checks availability without downloading a PDF before selection.
+      fetch(record.url, { method: "HEAD", cache: "no-store" }).then((response) => {
+        if (!response.ok) throw new Error("PDF unavailable");
+        open.disabled = false;
+        status.textContent = "";
+      }).catch(() => {
+        status.textContent = "فایل در دسترس نیست.";
+        console.warn(`Expected PDF: public/entry-1/${record.url}`);
+      });
+      open.addEventListener("click", () => {
+        document.getElementById("pdf-title").textContent = record.title;
+        document.getElementById("pdf-link").href = record.url;
+        const frame = document.createElement("iframe");
+        frame.className = "pdf-frame";
+        frame.title = record.title;
+        frame.src = record.url;
+        pdfContainer.replaceChildren(frame);
+        showInternalView("pdf-view", "pdf-title", record.title);
+      });
+    }
+    showInternalView("category-view", "category-title", title);
+  });
+}
+
+document.getElementById("return-category").addEventListener("click", returnToSuspects);
+document.getElementById("return-pdf").addEventListener("click", returnToSuspects);
 
 for (const image of document.querySelectorAll(".suspect-portrait img")) {
   const showFallback = () => {
