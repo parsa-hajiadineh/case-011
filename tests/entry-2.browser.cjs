@@ -122,7 +122,8 @@ async function main() {
       { width: 390, height: 844, reduced: true, largeText: true, name: "mobile-text-200" }
     ];
     const visibleOutput = () => read("(()=>{const r=document.querySelector('.output-panel').getBoundingClientRect();return r.top>=0&&r.bottom<=innerHeight})()");
-    for (const scenario of cases) {
+    const activeCases = process.argv.includes("--measure-current") ? cases.filter(scenario => ["mobile-360x640", "mobile-390x844", "mobile-reduced"].includes(scenario.name)) : cases;
+    for (const scenario of activeCases) {
       await send("Emulation.setDeviceMetricsOverride", { width: scenario.width, height: scenario.height, screenWidth: scenario.width, screenHeight: scenario.height, deviceScaleFactor: 1, mobile: false });
       await send("Emulation.setEmulatedMedia", { features: [{ name: "prefers-reduced-motion", value: scenario.reduced ? "reduce" : "no-preference" }] });
       await load();
@@ -142,6 +143,11 @@ async function main() {
         assert.equal(await read("Math.abs(document.querySelector('.output-panel').getBoundingClientRect().top-document.querySelector('.comparison-panel').getBoundingClientRect().top)<2"), true);
       }
       await delay(650);
+      if (scenario.width <= 900 && !scenario.largeText && scenario.height >= 640) {
+        assert.equal(await read("document.querySelector('.comparison-panel').getBoundingClientRect().bottom <= innerHeight - parseFloat(getComputedStyle(document.querySelector('.laboratory')).paddingBottom) + 1"), true);
+        assert(await read("document.querySelector('.comparison-panel').getBoundingClientRect().height") > (scenario.height === 640 ? 410 : 550));
+      }
+      if (process.argv.includes("--measure-current")) console.log("PANEL MEASUREMENT", scenario.name, await read("(()=>{const measure=selector=>{const e=document.querySelector(selector),r=e.getBoundingClientRect();return{height:r.height,top:r.top,bottom:r.bottom,clientHeight:e.clientHeight,scrollHeight:e.scrollHeight}};return{viewport:innerHeight,header:measure('.lab-header'),input:measure('.comparison-panel'),output:measure('.output-panel'),reduced:matchMedia('(prefers-reduced-motion: reduce)').matches}})()"));
       await screenshot(`${scenario.name}-compact-initial`);
       for (let index = 0; index < 4; index++) {
         await click(`.operator-slot[data-sample='${"BCDE"[index]}']`);
@@ -181,18 +187,30 @@ async function main() {
       assert.equal(await read("document.documentElement.scrollWidth <= innerWidth"), true);
       await screenshot(`${scenario.name}-compact-result`);
       console.log(`PASS ${scenario.name}: output stays visible during input, internal staged scrolling leaves page at ${pageScroll}px, earlier result sections reachable, no horizontal overflow.`);
-      if (scenario.width === 390 && !scenario.largeText) {
-        assert.equal(await read("(()=>{const w=document.querySelector('#warning-output').getBoundingClientRect(),p=document.querySelector('#output-scroll').getBoundingClientRect(),b=document.querySelector('#open-original-record').getBoundingClientRect();return w.top>=p.top&&w.bottom<=p.bottom&&b.top>=p.top&&b.bottom<=p.bottom})()"), true);
-      }
+      if (scenario.width <= 900) assert.equal(await read("(()=>{const p=document.querySelector('#output-scroll').getBoundingClientRect(),b=document.querySelector('#open-original-record').getBoundingClientRect();return b.top>=p.top&&b.bottom<=p.bottom})()"), true);
       if (!scenario.record || process.argv.includes("--layout-only")) continue;
+      assert.equal(await read("document.querySelector('.decoding-emblem').getAnimations({subtree:true}).length"), 0);
       const started = Date.now();
       await click("#open-original-record", 2);
+      await click("#corruption-notice");
       assert.equal(await read("decodingGeneration"), 1);
       assert.equal(await read("document.querySelectorAll('#corruption-notice').length"), 1);
       const status = await read("document.getElementById('record-status').textContent");
+      const recordFrames = async () => {
+        const directory = path.join(output, `motion-${scenario.name}-${process.argv.includes("--measure-current") ? "before" : "after"}`);
+        fs.mkdirSync(directory, { recursive: true });
+        const recordingStart = Date.now();
+        for (let index = 0; index < 40; index++) {
+          await delay(Math.max(0, index * 200 - (Date.now() - recordingStart)));
+          const crop = await read("(()=>{const r=document.querySelector('.corruption-notice').getBoundingClientRect();return{x:r.x,y:r.y,width:Math.ceil(r.width),height:Math.ceil(r.height),scale:1}})()");
+          const frame = await send("Page.captureScreenshot", { format: "png", captureBeyondViewport: false, clip: crop });
+          fs.writeFileSync(path.join(directory, `frame-${String(index).padStart(3, "0")}.png`), Buffer.from(frame.data, "base64"));
+        }
+      };
+      const recording = process.argv.includes("--record-motion") ? recordFrames() : Promise.resolve();
       for (const at of [700, 4100, 8300, 12400]) {
         await delay(Math.max(0, at - (Date.now() - started)));
-        const state = await read("(()=>{const styles=selector=>{const s=getComputedStyle(document.querySelector(selector));return{name:s.animationName,state:s.animationPlayState,transform:s.transform,opacity:s.opacity}};return{outer:styles('.emblem-ring-outer'),middle:styles('.emblem-ring-middle'),inner:styles('.emblem-ring-inner'),sweep:styles('.core-sweep'),light:styles('.core-light'),nodes:[...document.querySelectorAll('.processing-node')].map(e=>getComputedStyle(e).opacity),animations:document.querySelector('.decoding-emblem').getAnimations({subtree:true}).map(e=>({state:e.playState,time:e.currentTime,duration:e.effect.getTiming().duration})),reduced:matchMedia('(prefers-reduced-motion: reduce)').matches}})()");
+        const state = await read("(()=>{const styles=selector=>{const s=getComputedStyle(document.querySelector(selector));return{name:s.animationName,duration:s.animationDuration,iterations:s.animationIterationCount,state:s.animationPlayState,origin:s.transformOrigin,box:s.transformBox,transform:s.transform,opacity:s.opacity}};return{emblem:styles('.decoding-emblem'),outer:styles('.emblem-ring-outer'),middle:styles('.emblem-ring-middle'),inner:styles('.emblem-ring-inner'),sweep:styles('.core-sweep'),light:styles('.core-light'),nodes:[...document.querySelectorAll('.processing-node')].map(e=>getComputedStyle(e).opacity),animations:document.querySelector('.decoding-emblem').getAnimations({subtree:true}).map(e=>({state:e.playState,time:e.currentTime,duration:e.effect.getTiming().duration,keyframes:e.effect.getKeyframes()})),reduced:matchMedia('(prefers-reduced-motion: reduce)').matches}})()");
         observations.push({ scenario: scenario.name, elapsed: Date.now() - started, ...state });
         assert.equal(await read("document.getElementById('open-decoded-record').hidden"), true);
         assert.equal(await read("document.getElementById('record-status').textContent"), status);
@@ -201,10 +219,16 @@ async function main() {
           assert.equal(state.middle.name, "none");
           assert.equal(state.sweep.name, "none");
           assert.equal(state.light.name, "emblem-light");
+          assert.equal(state.emblem.name, "emblem-reduced-light");
         } else {
           assert.equal(state.outer.name, "emblem-rotate");
           assert.equal(state.middle.name, "emblem-rotate");
           assert.equal(state.outer.state, "running");
+          assert.equal(state.outer.duration, "6s");
+          assert.equal(state.middle.duration, "4.3s");
+          assert.equal(state.inner.duration, "3.1s");
+          assert.equal(state.outer.box, "view-box");
+          assert.equal(state.outer.origin, "60px 60px");
           assert.equal(state.sweep.name, "emblem-scan");
           assert(state.animations.length >= 8);
           assert(state.animations.every(animation => animation.state === "running"));
@@ -212,7 +236,9 @@ async function main() {
         await screenshot(`${scenario.name}-emblem-${at}`);
       }
       const frames = observations.filter(frame => frame.scenario === scenario.name);
+      await recording;
       assert(new Set(frames.map(frame => frame.light.opacity)).size > 2);
+      if (scenario.reduced) assert(new Set(frames.map(frame => frame.emblem.opacity)).size > 2);
       if (!scenario.reduced) {
         for (const element of ["outer", "middle", "inner", "sweep"]) assert(new Set(frames.map(frame => frame[element].transform)).size === 4);
         assert(new Set(frames.map(frame => JSON.stringify(frame.nodes))).size > 2);
@@ -224,9 +250,15 @@ async function main() {
       await click("#open-decoded-record");
       assert.equal(await read("document.getElementById('decoded-record-view').hidden"), false);
       assert.equal(await read("document.querySelectorAll('#decoded-record-view button').length"), 0);
+      assert.equal(await read("document.querySelector('#decoded-record-view .record-toolbar').textContent.trim()"), "DECODED RECORD");
+      assert.equal(await read("document.querySelectorAll('#decoded-record-view .record-identifier').length"), 0);
+      assert.equal(await read("document.querySelector('.lab-header .case-identifier').textContent"), "CASE 011");
+      const morse = await read("document.getElementById('morse-message').textContent");
+      const reverse = { "-": "T", ".-": "A", "-.-": "K", ".": "E", "....": "H", "-.--": "Y", "-.": "N", "-..": "D", "..-.": "F", "..": "I", "-.-.": "C" };
+      assert.equal(morse.split(" / ").map(word => word.split(" ").map(letter => reverse[letter]).join("")).join(" "), "TAKE THE KEY AND FIND THE CHAIN IN THE KITCHEN");
       console.log(`PASS ${scenario.name}: continuous observed motion at 0.7/4.1/8.3/12.4s, completion ${completed-started}ms, no duplicate timers, all motion stops at completion.`);
     }
-    fs.writeFileSync(path.join(output, "emblem-observations.json"), JSON.stringify(observations, null, 2));
+    fs.writeFileSync(path.join(output, process.argv.includes("--measure-current") ? "emblem-before-observations.json" : "emblem-observations.json"), JSON.stringify(observations, null, 2));
     assert.equal(errors.length, 0);
   };
   try {

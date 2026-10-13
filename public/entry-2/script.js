@@ -8,6 +8,16 @@ const comparisonError = document.getElementById("comparison-error");
 const databaseStatus = document.getElementById("database-status");
 const checkingState = document.getElementById("checking-state");
 const outputScroll = document.getElementById("output-scroll");
+const labHeader = document.querySelector(".lab-header");
+const laboratory = document.querySelector(".laboratory");
+
+function measureHeader() {
+  // Use the actual wrapped header size in the dynamic mobile viewport budget.
+  laboratory.style.setProperty("--header-height", `${labHeader.getBoundingClientRect().height}px`);
+}
+measureHeader();
+const headerObserver = new ResizeObserver(measureHeader);
+headerObserver.observe(labHeader);
 const choices = Array(slots.length).fill(null);
 let selectedSlot = 0;
 let resultPending = false;
