@@ -12,7 +12,9 @@ Original PDFs are retained in `public/entry-1/assets/evidence/`. Category lists 
 
 Dossiers retain the supplied Persian copy, use the four provided portraits, and offer independent native statement disclosures. Motives contain decorative shapes and a restricted-access label only. Returning from evidence requirements preserves open statements and the dossier scroll position. Optional Web Audio ambience remains available across all views, starts only when enabled, and pauses while the page is hidden.
 
-Entries 2-4 remain empty scaffolds. QR codes and hosting are not implemented.
+Entry 2 is an independent PATTERN DATABASE portal at `/entry-2/`. Four button-based comparison slots accept only `=` or `≠` from its keypad. Validation retains choices after errors; a successful submission locks controls and reveals the match, reference, and warning at 700 ms, 1900 ms, and 3100 ms. Status announcements contain only the newly revealed section. Entry 2 reuses the existing self-hosted Persian font without requiring archive access or adding navigation between entries.
+
+Entries 3-4 remain empty scaffolds. QR codes and hosting are not implemented.
 
 ## Structure
 
@@ -48,7 +50,7 @@ No dependencies or build step are required. Serve `public/` with a static HTTP s
 python -m http.server 8000 --directory public
 ```
 
-Open entry 1 at `http://localhost:8000/entry-1/`. Entries 2-4 currently display blank pages. Entry 1 requires JavaScript for the access check; unsupported audio does not prevent access.
+Open entry 1 at `http://localhost:8000/entry-1/` or entry 2 at `http://localhost:8000/entry-2/`. Entries 3-4 currently display blank pages. Entries 1 and 2 require JavaScript for their interactions; unsupported audio does not prevent archive access.
 
 ## Deployment
 

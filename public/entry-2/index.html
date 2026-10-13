@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0c1723">
+  <title>PATTERN DATABASE · CASE 011</title>
+  <link rel="preload" href="../entry-1/assets/fonts/Vazirmatn-Variable.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="../shared/foundation.css">
+  <link rel="stylesheet" href="styles.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <div class="laboratory">
+    <header class="lab-header">
+      <div class="lab-identity" dir="ltr">
+        <svg class="lab-mark" viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M10 3h12M12 3v10L5 25a3 3 0 0 0 3 4h16a3 3 0 0 0 3-4l-7-12V3M9 21h14"/><path d="M13 24h2m4 0h2"/></svg>
+        <span>PATTERN DATABASE</span>
+      </div>
+      <span class="case-identifier" dir="ltr">CASE 011</span>
+    </header>
+
+    <main class="database-layout">
+      <section class="comparison-panel" aria-labelledby="comparison-title">
+        <div class="panel-heading">
+          <span class="heading-rule" aria-hidden="true"></span>
+          <h1 id="comparison-title">نتیجه آزمایش را وارد کنید</h1>
+        </div>
+        <form id="comparison-form" novalidate aria-describedby="comparison-error">
+          <table class="comparison-table" dir="ltr" aria-label="مقایسه نمونه A با نمونه‌های B، C، D و E">
+            <thead><tr><th scope="col">نمونه</th><th scope="col">رابطه</th><th scope="col">نمونه</th></tr></thead>
+            <tbody>
+              <tr data-active="true"><td>A</td><td><button class="operator-slot" type="button" data-sample="B" aria-pressed="true" aria-label="مقایسه A با B؛ انتخاب مشخص نشده"><span aria-hidden="true"></span></button></td><td>B</td></tr>
+              <tr data-active="false"><td>A</td><td><button class="operator-slot" type="button" data-sample="C" aria-pressed="false" aria-label="مقایسه A با C؛ انتخاب مشخص نشده"><span aria-hidden="true"></span></button></td><td>C</td></tr>
+              <tr data-active="false"><td>A</td><td><button class="operator-slot" type="button" data-sample="D" aria-pressed="false" aria-label="مقایسه A با D؛ انتخاب مشخص نشده"><span aria-hidden="true"></span></button></td><td>D</td></tr>
+              <tr data-active="false"><td>A</td><td><button class="operator-slot" type="button" data-sample="E" aria-pressed="false" aria-label="مقایسه A با E؛ انتخاب مشخص نشده"><span aria-hidden="true"></span></button></td><td>E</td></tr>
+            </tbody>
+          </table>
+          <div class="operator-keypad" role="group" aria-label="انتخاب رابطه برای مقایسه فعال">
+            <button class="operator-key" type="button" data-operator="=" aria-label="برابر"><span class="key-symbol" dir="ltr" aria-hidden="true">=</span><span>برابر</span></button>
+            <button class="operator-key" type="button" data-operator="≠" aria-label="نابرابر"><span class="key-symbol" dir="ltr" aria-hidden="true">≠</span><span>نابرابر</span></button>
+          </div>
+          <p class="comparison-error" id="comparison-error" role="alert" aria-atomic="true"></p>
+          <button class="submit-result" id="submit-result" type="submit">تأیید نتیجه<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 12 4 4 8-8"/></svg></button>
+        </form>
+        <noscript><p class="comparison-error">برای بررسی نتیجه آزمایش، جاوااسکریپت مرورگر را فعال کنید.</p></noscript>
+      </section>
+
+      <section class="output-panel" aria-labelledby="output-title">
+        <div class="output-heading"><h2 id="output-title">خروجی پایگاه داده</h2><span class="output-mark" aria-hidden="true">+</span></div>
+        <svg class="sample-pattern" viewBox="0 0 360 120" fill="none" aria-hidden="true">
+          <path class="sample-grid" d="M0 30h360M0 60h360M0 90h360M30 0v120M90 0v120M150 0v120M210 0v120M270 0v120M330 0v120"/>
+          <path class="sample-bands" d="M30 18v17m0 10v29m0 12v17M90 10v22m0 13v12m0 12v34M150 19v14m0 12v39m0 12v15M210 12v33m0 12v18m0 11v20M270 20v24m0 14v13m0 14v25M330 12v24m0 13v32m0 11v14"/>
+          <path class="sample-crosshair" d="M6 6h12M6 6v12M354 6h-12M354 6v12M6 114h12M6 114v-12M354 114h-12M354 114v-12"/>
+        </svg>
+        <div class="output-content">
+          <svg class="output-idle" id="output-idle" viewBox="0 0 280 260" fill="none" aria-hidden="true">
+            <path d="M70 205V120a70 70 0 0 1 140 0v85M86 220V121a54 54 0 0 1 108 0v99M102 228V122a38 38 0 0 1 76 0v106M118 215v-92a22 22 0 0 1 44 0v92M134 200v-76a6 6 0 0 1 12 0v76"/>
+            <path class="idle-frame" d="M25 48V25h23M232 25h23v23M25 212v23h23M232 235h23v-23M20 130h240"/>
+          </svg>
+          <p id="checking-state" class="checking-state" hidden><span class="checking-indicator" aria-hidden="true"></span>در حال بررسی تطبیق</p>
+          <div class="match-output" id="match-output" dir="ltr" hidden>
+            <p class="match-label">MATCH CONFIRMED</p>
+            <p>Crime Scene Sample A</p>
+            <p>Pattern Correspondence: C</p>
+          </div>
+          <p class="reference-output" id="reference-output" dir="ltr" hidden>Reference C: NORA AZARGOSHASB</p>
+          <div class="warning-output" id="warning-output" hidden>
+            <h3 dir="ltr">WARNING</h3>
+            <p>این تطبیق حضور نمونه زیستی در اتاق را تایید میکند نه ارتکاب قتل را</p>
+          </div>
+        </div>
+      </section>
+      <p class="sr-only" id="database-status" role="status" aria-live="polite" aria-atomic="true"></p>
+    </main>
+  </div>
+</body>
+</html>
