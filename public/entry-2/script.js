@@ -84,9 +84,124 @@ comparisonForm.addEventListener("submit", (event) => {
         warning.hidden = false;
         databaseStatus.textContent = warning.textContent.trim();
         comparisonForm.removeAttribute("aria-busy");
+        const fadeDuration = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 280;
+        window.setTimeout(() => {
+          document.getElementById("open-original-record").hidden = false;
+          databaseStatus.textContent = "VIEW ORIGINAL RECORD";
+        }, 2000 + fadeDuration);
       }, 1200);
     }, 1200);
   }, 700);
 });
 
 renderSlots();
+
+const entryViews = ["database-view", "original-record-view", "decoded-record-view"];
+const originalRecordButton = document.getElementById("open-original-record");
+const decodedRecordButton = document.getElementById("open-decoded-record");
+const corruptionNotice = document.getElementById("corruption-notice");
+const recordStatus = document.getElementById("record-status");
+let activeView = "database-view";
+let decodingComplete = false;
+let decodingTimer = null;
+let decodingGeneration = 0;
+let resultScrollPosition = 0;
+let originalScrollPosition = 0;
+
+function cancelDecoding() {
+  window.clearTimeout(decodingTimer);
+  decodingTimer = null;
+  decodingGeneration++;
+}
+
+function showRecordView(viewId, focusId, scrollPosition = 0) {
+  if (activeView === "original-record-view" && viewId !== activeView) cancelDecoding();
+  activeView = viewId;
+  for (const id of entryViews) {
+    const view = document.getElementById(id);
+    view.hidden = id !== viewId;
+    view.inert = id !== viewId;
+  }
+  document.title = viewId === "database-view" ? "PATTERN DATABASE · CASE 011"
+    : viewId === "original-record-view" ? "ORIGINAL RECORD · CASE 011" : "DECODED RECORD · CASE 011";
+  document.getElementById(focusId).focus({ preventScroll: true });
+  window.scrollTo({ top: scrollPosition, behavior: "instant" });
+}
+
+function renderDecodingState() {
+  corruptionNotice.setAttribute("data-state", decodingComplete ? "ready" : "decoding");
+  decodedRecordButton.hidden = !decodingComplete;
+}
+
+function startDecoding() {
+  cancelDecoding();
+  renderDecodingState();
+  if (decodingComplete) return;
+  const generation = decodingGeneration;
+  const deadline = performance.now() + 15000;
+  recordStatus.textContent = "در حال رمزگشایی پرونده.";
+  const update = () => {
+    if (generation !== decodingGeneration || activeView !== "original-record-view") return;
+    const remaining = deadline - performance.now();
+    if (remaining <= 0) {
+      decodingTimer = null;
+      decodingComplete = true;
+      renderDecodingState();
+      recordStatus.textContent = "رمزگشایی پرونده کامل شد.";
+      return;
+    }
+    decodingTimer = window.setTimeout(update, Math.min(remaining, 250));
+  };
+  update();
+}
+
+originalRecordButton.addEventListener("click", () => {
+  if (activeView !== "database-view" || originalRecordButton.hidden) return;
+  resultScrollPosition = window.scrollY;
+  showRecordView("original-record-view", "corruption-notice");
+  startDecoding();
+});
+
+document.getElementById("back-to-result").addEventListener("click", () => {
+  if (activeView !== "original-record-view") return;
+  showRecordView("database-view", "open-original-record", resultScrollPosition);
+});
+
+decodedRecordButton.addEventListener("click", () => {
+  if (activeView !== "original-record-view" || !decodingComplete) return;
+  originalScrollPosition = window.scrollY;
+  showRecordView("decoded-record-view", "decoded-record-title");
+});
+
+document.getElementById("back-to-original").addEventListener("click", () => {
+  if (activeView !== "decoded-record-view") return;
+  renderDecodingState();
+  showRecordView("original-record-view", "open-decoded-record", originalScrollPosition);
+});
+
+window.addEventListener("pagehide", cancelDecoding);
+window.addEventListener("pageshow", () => {
+  if (activeView === "original-record-view" && !decodingComplete) startDecoding();
+});
+
+// International Morse letters, verified against ITU-R M.1677-1, Annex 1.
+const morseAlphabet = {
+  A: ".-", B: "-...", C: "-.-.", D: "-..", E: ".", F: "..-.", G: "--.",
+  H: "....", I: "..", J: ".---", K: "-.-", L: ".-..", M: "--", N: "-.",
+  O: "---", P: ".--.", Q: "--.-", R: ".-.", S: "...", T: "-", U: "..-",
+  V: "...-", W: ".--", X: "-..-", Y: "-.--", Z: "--.."
+};
+const recordMessage = "TAKE THE KEY AND FIND THE CHAIN IN THE KITCHEN";
+const messageArea = document.getElementById("morse-message");
+recordMessage.split(" ").forEach((word, index) => {
+  if (index > 0) {
+    const separator = document.createElement("span");
+    separator.className = "morse-separator";
+    separator.textContent = " / ";
+    messageArea.append(separator);
+  }
+  const encodedWord = document.createElement("span");
+  encodedWord.className = "morse-word";
+  encodedWord.textContent = [...word].map((letter) => morseAlphabet[letter]).join(" ");
+  messageArea.append(encodedWord);
+});

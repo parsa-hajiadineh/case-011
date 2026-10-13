@@ -13,14 +13,18 @@
 <body>
   <div class="laboratory">
     <header class="lab-header">
-      <div class="lab-identity" dir="ltr">
+      <div class="lab-identity">
         <svg class="lab-mark" viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M10 3h12M12 3v10L5 25a3 3 0 0 0 3 4h16a3 3 0 0 0 3-4l-7-12V3M9 21h14"/><path d="M13 24h2m4 0h2"/></svg>
-        <span>PATTERN DATABASE</span>
+        <div class="lab-title-block">
+          <p class="institution-title">سامانه بایگانی و ثبت الگوهای ژنتیکی نمونههای زیستی</p>
+          <p class="database-identifier" dir="ltr">PATTERN DATABASE</p>
+        </div>
       </div>
       <span class="case-identifier" dir="ltr">CASE 011</span>
     </header>
 
-    <main class="database-layout">
+    <main>
+      <div class="database-layout" id="database-view">
       <section class="comparison-panel" aria-labelledby="comparison-title">
         <div class="panel-heading">
           <span class="heading-rule" aria-hidden="true"></span>
@@ -69,9 +73,40 @@
             <h3 dir="ltr">WARNING</h3>
             <p>این تطبیق حضور نمونه زیستی در اتاق را تایید میکند نه ارتکاب قتل را</p>
           </div>
+          <button class="archive-action" id="open-original-record" type="button" dir="ltr" hidden>VIEW ORIGINAL RECORD</button>
+        </div>
+      </section>
+      </div>
+
+      <section class="record-view" id="original-record-view" aria-labelledby="original-record-title" hidden inert>
+        <div class="record-toolbar">
+          <div dir="ltr"><p class="record-identifier">CASE 011 / PATTERN DATABASE</p><h1 id="original-record-title" tabindex="-1">ORIGINAL RECORD</h1></div>
+          <button class="record-back" id="back-to-result" type="button">بازگشت</button>
+        </div>
+        <div class="record-shell">
+          <div class="file-frame" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+          <div class="corruption-notice" id="corruption-notice" role="dialog" aria-modal="false" aria-labelledby="corruption-title" aria-describedby="corruption-description" tabindex="-1" data-state="decoding">
+            <h2 id="corruption-title" dir="ltr">File corrupted</h2>
+            <p id="corruption-description" dir="ltr">Decoding required</p>
+            <svg class="decoding-ring" viewBox="0 0 64 64" fill="none" aria-hidden="true"><circle class="ring-track" cx="32" cy="32" r="24"/><circle class="ring-segments" cx="32" cy="32" r="24"/><path d="M28 32h8M32 28v8"/></svg>
+            <button class="archive-action" id="open-decoded-record" type="button" dir="ltr" hidden>VIEW DECODED FILE</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="record-view" id="decoded-record-view" aria-labelledby="decoded-record-title" hidden inert>
+        <div class="record-toolbar">
+          <div dir="ltr"><p class="record-identifier">CASE 011 / PATTERN DATABASE</p><h1 id="decoded-record-title" tabindex="-1">DECODED RECORD</h1></div>
+          <button class="record-back" id="back-to-original" type="button">بازگشت</button>
+        </div>
+        <div class="decoded-document">
+          <div class="document-register" aria-hidden="true"><span></span><span></span><span></span></div>
+          <p class="morse-message" id="morse-message" dir="ltr"></p>
+          <div class="document-end" aria-hidden="true"><span></span><span></span></div>
         </div>
       </section>
       <p class="sr-only" id="database-status" role="status" aria-live="polite" aria-atomic="true"></p>
+      <p class="sr-only" id="record-status" role="status" aria-live="polite" aria-atomic="true"></p>
     </main>
   </div>
 </body>
