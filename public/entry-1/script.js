@@ -69,8 +69,24 @@ const evidenceButton = document.getElementById("open-evidence");
 const documentsButton = document.getElementById("selected-documents");
 const categoryPanel = document.getElementById("document-categories");
 const pdfContainer = document.getElementById("pdf-container");
+const soundControl = document.getElementById("sound-control");
+let documentsUnlocked = false;
 let suspectScrollPosition = 0;
 let suspectReturnFocus = "open-evidence";
+
+function renderDocumentsControl() {
+  documentsButton.disabled = !documentsUnlocked;
+  documentsButton.setAttribute("data-state", documentsUnlocked ? "unlocked" : "locked");
+  document.getElementById("documents-lock-path").setAttribute("d", documentsUnlocked
+    ? "M8 10V7a4 4 0 0 1 8 0" : "M8 10V7a4 4 0 0 1 8 0v3");
+  document.getElementById("documents-state").textContent = documentsUnlocked
+    ? "مدارک منتخب کارآگاه در دسترس است."
+    : "برای دسترسی به مدارک، شواهد را بررسی کنید و به مظنونین بازگردید.";
+  if (!documentsUnlocked) categoryPanel.hidden = true;
+  documentsButton.setAttribute("aria-expanded", String(!categoryPanel.hidden));
+}
+
+renderDocumentsControl();
 
 const documentCategories = {
   nora: [
@@ -85,6 +101,8 @@ const documentCategories = {
 };
 
 function showInternalView(viewId, focusId, title, scrollPosition = 0) {
+  // Move the same control and handlers; audio preference and context stay intact.
+  document.getElementById(`sound-slot-${viewId}`).append(soundControl);
   if (viewId !== "pdf-view") pdfContainer.replaceChildren();
   for (const id of internalViews) {
     const view = document.getElementById(id);
@@ -105,16 +123,9 @@ evidenceButton.addEventListener("click", () => {
 
 document.getElementById("return-suspects").addEventListener("click", () => {
   if (document.getElementById("evidence-view").hidden) return;
-  documentsButton.hidden = false;
-  document.getElementById("documents-notice").hidden = false;
+  documentsUnlocked = true;
+  renderDocumentsControl();
   returnToSuspects();
-});
-
-document.getElementById("jump-to-documents").addEventListener("click", (event) => {
-  event.preventDefault();
-  // Preserve return scroll position; move to the unlocked heading only on request.
-  documentsButton.focus({ preventScroll: true });
-  documentsButton.scrollIntoView({ block: "center", behavior: "instant" });
 });
 
 function returnToSuspects() {
@@ -124,13 +135,15 @@ function returnToSuspects() {
 }
 
 documentsButton.addEventListener("click", () => {
+  if (!documentsUnlocked || document.getElementById("destination-view").hidden) return;
   categoryPanel.hidden = !categoryPanel.hidden;
-  documentsButton.setAttribute("aria-expanded", String(!categoryPanel.hidden));
+  renderDocumentsControl();
 });
 
 for (const button of categoryPanel.querySelectorAll("button")) {
   button.id = `category-${button.dataset.category}`;
   button.addEventListener("click", () => {
+    if (!documentsUnlocked || categoryPanel.hidden || document.getElementById("destination-view").hidden) return;
     suspectScrollPosition = window.scrollY;
     suspectReturnFocus = button.id;
     const title = button.textContent;

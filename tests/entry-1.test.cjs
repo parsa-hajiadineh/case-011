@@ -44,7 +44,13 @@ function fixture({ unavailable = [], supportedAudio = true } = {}) {
     focus() { focused = this.id; }
     blur() { focused = undefined; }
     scrollIntoView() { scrolledTo = this.id; }
-    append(...items) { this.children.push(...items); }
+    append(...items) {
+      for (const item of items) {
+        if (item.parentElement) item.parentElement.children = item.parentElement.children.filter((child) => child !== item);
+        item.parentElement = this;
+        this.children.push(item);
+      }
+    }
     replaceChildren(...items) { this.children = items; }
     querySelectorAll() { return this.children; }
     click() { if (!this.disabled) this.handlers.click?.({ preventDefault() {} }); }
@@ -53,11 +59,13 @@ function fixture({ unavailable = [], supportedAudio = true } = {}) {
     const node = new Element(match[1]);
     node.hidden = /\bhidden\b/.test(match[0]);
     node.inert = /\binert\b/.test(match[0]);
+    node.disabled = /\bdisabled\b/.test(match[0]);
     for (const attribute of match[0].matchAll(/([\w-]+)="([^"]*)"/g)) {
       node.attributes[attribute[1]] = attribute[2];
     }
   }
   const get = (id) => nodes.find((node) => node.id === id);
+  get("sound-slot-access-view").append(get("sound-control"));
   const categories = [...html.matchAll(/data-category="([^"]+)"[^>]*>([^<]+)</g)].map((match) => {
     const node = new Element();
     node.dataset.category = match[1];
@@ -107,24 +115,34 @@ function fixture({ unavailable = [], supportedAudio = true } = {}) {
 }
 const settle = () => new Promise((resolve) => setImmediate(resolve));
 
-test("documents reveal only on evidence return, remain available, and reset on reload", () => {
+test("documents are visible but locked until evidence return, remain unlocked, and reset on reload", () => {
   const f = fixture();
   f.unlock();
   assert.equal(f.get("destination-view").hidden, false);
-  assert.equal(f.get("selected-documents").hidden, true);
-  assert.equal(f.get("documents-notice").hidden, true);
+  assert.equal(f.get("selected-documents").hidden, false);
+  assert.equal(f.get("selected-documents").disabled, true);
+  assert.equal(f.get("selected-documents").attributes["data-state"], "locked");
+  assert.equal(f.get("documents-lock-path").attributes.d, "M8 10V7a4 4 0 0 1 8 0v3");
+  assert.equal(f.get("documents-state").textContent, "برای دسترسی به مدارک، شواهد را بررسی کنید و به مظنونین بازگردید.");
+  f.get("selected-documents").click();
+  assert.equal(f.get("document-categories").hidden, true);
+  // Check the state guard independently of native disabled activation semantics.
+  f.get("selected-documents").handlers.click();
+  f.categories[0].handlers.click();
+  assert.equal(f.get("document-categories").hidden, true);
+  assert.equal(f.get("category-view").hidden, true);
   f.window.scrollY = 1400;
   f.get("open-evidence").click();
   assert.equal(f.get("evidence-view").hidden, false);
-  assert.equal(f.get("selected-documents").hidden, true);
+  assert.equal(f.get("selected-documents").disabled, true);
   f.get("return-suspects").click();
   assert.equal(f.get("selected-documents").hidden, false);
-  assert.equal(f.get("documents-notice").hidden, false);
+  assert.equal(f.get("selected-documents").disabled, false);
+  assert.equal(f.get("selected-documents").attributes["data-state"], "unlocked");
+  assert.equal(f.get("documents-lock-path").attributes.d, "M8 10V7a4 4 0 0 1 8 0");
+  assert.equal(f.get("documents-state").textContent, "مدارک منتخب کارآگاه در دسترس است.");
   assert.equal(f.window.scrollY, 1400);
   assert.equal(f.focused(), "open-evidence");
-  f.get("jump-to-documents").click();
-  assert.equal(f.focused(), "selected-documents");
-  assert.equal(f.scrolledTo(), "selected-documents");
   for (const expanded of [true, false, true]) {
     f.get("selected-documents").click();
     assert.equal(f.get("document-categories").hidden, !expanded);
@@ -132,11 +150,12 @@ test("documents reveal only on evidence return, remain available, and reset on r
   }
   f.get("open-evidence").click();
   f.get("return-suspects").click();
-  assert.equal(f.get("selected-documents").hidden, false);
+  assert.equal(f.get("selected-documents").disabled, false);
   const reloaded = fixture();
   reloaded.unlock();
-  assert.equal(reloaded.get("selected-documents").hidden, true);
-  assert.equal(reloaded.get("documents-notice").hidden, true);
+  assert.equal(reloaded.get("selected-documents").hidden, false);
+  assert.equal(reloaded.get("selected-documents").disabled, true);
+  assert.equal(reloaded.get("selected-documents").attributes["data-state"], "locked");
 });
 
 test("all category controls and five document viewers return with scroll and focus intact", async () => {
@@ -188,6 +207,7 @@ test("all category controls and five document viewers return with scroll and foc
       assert.equal(f.focused(), control.id);
       assert.equal(f.get("pdf-container").children.length, 0);
       assert.equal(f.get("selected-documents").hidden, false);
+      assert.equal(f.get("selected-documents").disabled, false);
     }
   }
   assert(f.requests.every((request) => request.options.method === "HEAD"));
@@ -251,7 +271,33 @@ test("sound starts only on activation, mutes, pauses when hidden, and handles un
   assert.equal(unsupported.get("sound-status").textContent, "پخش صدا در این مرورگر در دسترس نیست.");
 });
 
-test("dossier content and original PDF bytes are preserved; audio lives in the header", () => {
+test("the same sound control moves beside each active view title without restarting audio", async () => {
+  const f = fixture();
+  const control = f.get("sound-control");
+  assert.equal(control.parentElement.id, "sound-slot-access-view");
+  f.get("sound-toggle").click();
+  await settle();
+  const resumes = f.audio.resumes;
+  f.unlock();
+  assert.equal(control.parentElement.id, "sound-slot-destination-view");
+  f.get("open-evidence").click();
+  assert.equal(control.parentElement.id, "sound-slot-evidence-view");
+  f.get("return-suspects").click();
+  assert.equal(control.parentElement.id, "sound-slot-destination-view");
+  f.get("selected-documents").click();
+  f.categories[0].click();
+  await settle();
+  assert.equal(control.parentElement.id, "sound-slot-category-view");
+  f.get("document-list").children[0].children[0].click();
+  assert.equal(control.parentElement.id, "sound-slot-pdf-view");
+  f.get("return-pdf").click();
+  assert.equal(control.parentElement.id, "sound-slot-destination-view");
+  assert.equal(f.audio.resumes, resumes);
+  assert.equal(f.audio.contexts, 1);
+  assert.equal(f.get("sound-toggle").attributes["aria-pressed"], "true");
+});
+
+test("dossiers and PDF bytes are preserved; controls have no obsolete placement or spacing", () => {
   const previous = execFileSync("git", ["show", "HEAD:public/entry-1/index.html"], { cwd: root, encoding: "utf8" });
   // Git normalizes line endings; compare content after equivalent normalization.
   const dossiers = (text) => text.slice(text.indexOf('<div class="dossier-grid">'), text.lastIndexOf("</article>") + 10).replace(/\r\n/g, "\n");
@@ -264,8 +310,20 @@ test("dossier content and original PDF bytes are preserved; audio lives in the h
     assert.deepEqual(current, original);
   }
   const header = html.slice(html.indexOf("<header"), html.indexOf("</header>"));
-  assert(header.includes('id="sound-toggle"'));
-  assert(header.includes('id="sound-label">صدا خاموش'));
+  assert(!header.includes('id="sound-toggle"'));
+  assert.equal([...html.matchAll(/id="sound-toggle"/g)].length, 1);
+  assert.equal([...html.matchAll(/id="selected-documents"/g)].length, 1);
+  const suspectHeading = html.slice(html.indexOf('id="destination-view"'), html.indexOf('<div class="dossier-grid">'));
+  assert(!suspectHeading.includes('id="selected-documents"'));
+  assert(suspectHeading.includes('id="sound-slot-destination-view"'));
+  const actions = html.slice(html.indexOf('class="view-actions suspect-actions"'), html.indexOf('id="evidence-view"'));
+  assert(actions.includes('id="selected-documents"'));
+  assert(actions.indexOf('id="open-evidence"') < actions.indexOf('id="selected-documents"'));
+  assert(actions.includes('id="document-categories"'));
+  const documentsTag = html.match(/<button[^>]*id="selected-documents"[^>]*>/)[0];
+  assert(/\bdisabled\b/.test(documentsTag));
+  assert(!/\bhidden\b/.test(documentsTag));
+  assert(!/documents-notice|jump-to-documents/.test(html + source));
   assert(!html.includes("portal-footer"));
   const styles = fs.readFileSync(path.join(root, "public/entry-1/styles.css"), "utf8");
   assert(!/portal-footer|position:\s*fixed|padding-bottom:\s*120px/.test(styles));

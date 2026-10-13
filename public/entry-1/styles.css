@@ -25,7 +25,6 @@ body { min-height: 100vh; min-height: 100svh; background: var(--navy); color: va
   animation: ambient-light 24s ease-in-out infinite alternate;
 }
 .portal-header { width: min(100%, 1080px); margin-inline: auto; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px 20px; padding: 23px 0; border-bottom: 1px solid #91a8b126; animation: reveal 650ms ease-out both; }
-.header-controls { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 12px; min-width: 0; }
 .identity { display: flex; align-items: center; gap: 13px; min-width: 0; }
 .institution-mark { width: 44px; height: 44px; flex-shrink: 0; color: #a0c2af; }
 .institution-name { font-size: .94rem; font-weight: 500; }
@@ -44,7 +43,7 @@ body { min-height: 100vh; min-height: 100svh; background: var(--navy); color: va
 .document-rule { display: flex; gap: 4px; margin-bottom: 17px; }
 .document-rule span { width: 24px; height: 3px; background: #617f743f; }
 .document-rule span:first-child { background: #a0c2af; }
-#access-title { font-size: clamp(1.7rem, 3vw, 2.25rem); line-height: 1.55; font-weight: 650; margin-bottom: 30px; letter-spacing: -.025em; }
+#access-title { font-size: clamp(1.7rem, 3vw, 2.25rem); line-height: 1.55; font-weight: 650; margin-bottom: 0; letter-spacing: -.025em; }
 label { display: block; color: #d2dcd9; font-weight: 500; font-size: .95rem; margin-bottom: 12px; }
 input { display: block; width: 100%; min-width: 0; height: 64px; padding: 12px 18px; border: 1px solid #718995; border-radius: 6px; background: #0d1c27; color: #f0f4ef; font-size: 1.55rem; font-weight: 500; text-align: center; font-variant-numeric: tabular-nums; unicode-bidi: isolate; caret-color: #b7ddc4; transition: background-color 220ms, border-color 220ms, box-shadow 220ms; }
 input:hover:not(:disabled) { border-color: #b0c3ca; }
@@ -79,17 +78,23 @@ input:disabled { opacity: 1; color: #bccdc5; background: #162731; border-color: 
 .sound-button[aria-pressed="true"] { background: #254337; color: #dcf0e1; border-color: #719c81; }
 .sound-button svg { width: 20px; height: 20px; flex-shrink: 0; }
 .sound-button[aria-pressed="false"] svg { opacity: .7; }
-.sound-status { flex-basis: 100%; font-size: .85rem; color: var(--muted); }
+.sound-control { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+.sound-slot { margin-inline-start: auto; min-width: 0; max-width: 100%; }
+.sound-status { max-width: 240px; font-size: .85rem; color: var(--muted); overflow-wrap: anywhere; }
 .sound-status:empty { display: none; }
 :focus-visible { outline: 3px solid #b5dbc2; outline-offset: 4px; }
 .view-heading { margin-bottom: 28px; padding-bottom: 22px; border-bottom: 1px solid #5c74834d; }
 .view-heading h2 { margin: 10px 0 0; color: var(--muted); font-size: 1.05rem; font-weight: 500; }
-.suspect-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 18px; }
-.suspect-heading > div:first-child { min-width: 0; }
-#selected-documents { margin-inline-start: auto; }
-.suspect-actions { flex-direction: column; align-items: center; gap: 10px; }
-.documents-jump { display: inline-block; min-height: 44px; padding: 8px; color: #c5dfcf; text-underline-offset: 4px; text-align: center; border-radius: 4px; }
-.documents-jump:hover { background: #b7ddc408; }
+.title-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 18px; }
+.title-heading > :first-child { min-width: 0; flex: 1 1 180px; overflow-wrap: anywhere; }
+.access-heading { margin-bottom: 30px; }
+.suspect-actions { flex-wrap: wrap; align-items: stretch; gap: 16px; }
+.suspect-actions > .view-button { flex: 1 1 260px; max-width: 320px; }
+#selected-documents { display: inline-flex; align-items: center; justify-content: center; gap: 10px; transition: background-color 220ms, border-color 220ms, color 220ms; }
+#selected-documents[data-state="locked"] { color: #c3d0d6; background: #17242e; border-color: #718995; border-style: dashed; }
+#selected-documents[data-state="unlocked"] { border-color: #a0c2af; background: #254337; color: #dcf0e1; }
+.documents-lock { width: 18px; height: 18px; flex-shrink: 0; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.documents-state { flex-basis: 100%; text-align: center; color: var(--muted); font-size: .85rem; }
 .document-control { display: inline-block; min-height: 48px; max-width: 100%; padding: 10px 16px; border: 1px solid #718995; border-radius: 6px; background: #192a35; color: #c5dfcf; text-align: start; text-decoration: none; overflow-wrap: anywhere; transition: background-color 180ms, border-color 180ms; }
 .document-control:hover:not(:disabled), .document-control[aria-expanded="true"] { background: #243a46; border-color: #a0c2af; }
 .document-control:disabled { color: var(--muted); }
@@ -139,6 +144,7 @@ input:disabled { opacity: 1; color: #bccdc5; background: #162731; border-color: 
 .view-button { width: min(100%, 320px); justify-content: center; }
 .evidence-view { max-width: 640px; margin-inline: auto; padding: 36px; border: 1px solid #5c74834d; border-radius: 10px; background: linear-gradient(125deg, #1e303d, #162632); }
 .evidence-view h1 { text-align: right; font-family: "Segoe UI", Arial, sans-serif; font-size: 1.8rem; letter-spacing: .06em; margin-bottom: 28px; }
+.evidence-view .title-heading h1 { margin-bottom: 0; }
 .evidence-view > p { font-size: 1.05rem; }
 .evidence-view ul { margin: 18px 0 30px; padding-inline-start: 24px; color: #d5dfe0; }
 .evidence-view li { padding-block: 6px; }
@@ -161,8 +167,7 @@ input:disabled { opacity: 1; color: #bccdc5; background: #162731; border-color: 
   .archive-visual { display: none; }
   .access-form-panel { padding: 30px 28px; }
   #access-title { font-size: 1.85rem; }
-  .portal-header .identity { flex-basis: 100%; }
-  .header-controls { margin-inline-start: auto; }
+  .suspect-actions > .view-button { flex-basis: 100%; max-width: 100%; }
 }
 @media (max-width: 440px) {
   .portal { padding-inline: 16px; }
@@ -173,7 +178,8 @@ input:disabled { opacity: 1; color: #bccdc5; background: #162731; border-color: 
   .institution-caption { font-size: .75rem; }
   .case-tag { font-size: .7rem; padding: 5px 8px; letter-spacing: .07em; }
   .access-form-panel { padding: 28px 22px; }
-  #access-title { margin-bottom: 26px; font-size: 1.7rem; }
+  #access-title { font-size: 1.7rem; }
+  .access-heading { margin-bottom: 26px; }
   .primary-button { font-size: .9rem; padding-inline: 14px; }
   .dossier-card { padding: 20px; }
   .dossier-identity { grid-template-columns: 100px minmax(0, 1fr); gap: 18px; }

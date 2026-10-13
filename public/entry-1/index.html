@@ -24,14 +24,7 @@
           <p class="institution-caption">سامانه ثبت مدارک</p>
         </div>
       </div>
-      <div class="header-controls">
-        <span class="case-tag" dir="ltr">CASE 011</span>
-        <button class="sound-button" id="sound-toggle" type="button" aria-pressed="false" aria-describedby="sound-status">
-          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4Z M17 8a6 6 0 0 1 0 8 M20 5a10 10 0 0 1 0 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          <span id="sound-label">صدا خاموش</span>
-        </button>
-      </div>
-      <p id="sound-status" class="sound-status" role="status" aria-live="polite"></p>
+      <span class="case-tag" dir="ltr">CASE 011</span>
     </header>
 
     <main class="portal-main">
@@ -58,7 +51,18 @@
         </div>
         <div class="access-form-panel">
           <div class="document-rule" aria-hidden="true"><span></span><span></span><span></span></div>
-          <h1 id="access-title">سامانه ثبت مدارک</h1>
+          <div class="title-heading access-heading">
+            <h1 id="access-title">سامانه ثبت مدارک</h1>
+            <div class="sound-slot" id="sound-slot-access-view">
+              <div class="sound-control" id="sound-control">
+                <button class="sound-button" id="sound-toggle" type="button" aria-pressed="false" aria-describedby="sound-status">
+                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4Z M17 8a6 6 0 0 1 0 8 M20 5a10 10 0 0 1 0 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  <span id="sound-label">صدا خاموش</span>
+                </button>
+                <p id="sound-status" class="sound-status" role="status" aria-live="polite"></p>
+              </div>
+            </div>
+          </div>
           <form id="archive-form" novalidate>
             <label for="archive-number">شماره بایگانی را وارد کنید</label>
             <input id="archive-number" name="archive-number" type="text" inputmode="numeric" enterkeyhint="go" autocomplete="off" spellcheck="false" dir="ltr" aria-describedby="archive-error">
@@ -77,17 +81,12 @@
       </section>
 
       <section class="records-view" id="destination-view" aria-labelledby="destination-title" hidden>
-        <div class="view-heading suspect-heading">
+        <div class="view-heading title-heading">
           <div>
           <h1 id="destination-title" tabindex="-1">پرونده <bdi dir="ltr">CASE 011</bdi></h1>
           <h2>مظنونین پرونده</h2>
           </div>
-          <button class="document-control" id="selected-documents" type="button" aria-expanded="false" aria-controls="document-categories" hidden>مدارک منتخب کارآگاه</button>
-          <div class="document-categories" id="document-categories" hidden>
-            <button class="document-control" type="button" data-category="nora">مدارک مرتبط با نورا آذرگشسب</button>
-            <button class="document-control" type="button" data-category="arash">مدارک مرتبط با آرش نادری</button>
-            <button class="document-control" type="button" data-category="kamran">مدارک مرتبط با کامران فرهمند و باماخ</button>
-          </div>
+          <div class="sound-slot" id="sound-slot-destination-view"></div>
         </div>
         <div class="dossier-grid">
           <article class="dossier-card" aria-labelledby="suspect-01">
@@ -217,12 +216,24 @@
         </div>
         <div class="view-actions suspect-actions">
           <button class="primary-button view-button" id="open-evidence" type="button">بررسی شواهد</button>
-          <p id="documents-notice" role="status" hidden><a class="documents-jump" id="jump-to-documents" href="#selected-documents">مدارک منتخب کارآگاه فعال شد · مشاهده مدارک</a></p>
+          <button class="document-control view-button" id="selected-documents" type="button" disabled data-state="locked" aria-expanded="false" aria-controls="document-categories" aria-describedby="documents-state">
+            <svg class="documents-lock" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path id="documents-lock-path" d="M8 10V7a4 4 0 0 1 8 0v3"/><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M12 14v3"/></svg>
+            <span>مدارک منتخب کارآگاه</span>
+          </button>
+          <p class="documents-state" id="documents-state" role="status">برای دسترسی به مدارک، شواهد را بررسی کنید و به مظنونین بازگردید.</p>
+          <div class="document-categories" id="document-categories" hidden>
+            <button class="document-control" type="button" data-category="nora">مدارک مرتبط با نورا آذرگشسب</button>
+            <button class="document-control" type="button" data-category="arash">مدارک مرتبط با آرش نادری</button>
+            <button class="document-control" type="button" data-category="kamran">مدارک مرتبط با کامران فرهمند و باماخ</button>
+          </div>
         </div>
       </section>
 
       <section class="evidence-view" id="evidence-view" aria-labelledby="requirements-title" hidden>
-        <h1 id="requirements-title" dir="ltr" tabindex="-1">EVIDENCE 03</h1>
+        <div class="view-heading title-heading">
+          <h1 id="requirements-title" dir="ltr" tabindex="-1">EVIDENCE 03</h1>
+          <div class="sound-slot" id="sound-slot-evidence-view"></div>
+        </div>
         <p>شواهد فیزیکی مورد نیاز:</p>
         <ul>
           <li>عکس صحنه جرم</li>
@@ -232,13 +243,13 @@
         <button class="primary-button view-button" id="return-suspects" type="button">بازگشت به مظنونین</button>
       </section>
       <section class="documents-view" id="category-view" aria-labelledby="category-title" hidden inert>
-        <div class="view-heading"><h1 id="category-title" tabindex="-1"></h1></div>
+        <div class="view-heading title-heading"><h1 id="category-title" tabindex="-1"></h1><div class="sound-slot" id="sound-slot-category-view"></div></div>
         <ul class="document-list" id="document-list" aria-live="polite"></ul>
         <button class="primary-button view-button" id="return-category" type="button">بازگشت به مظنونین</button>
       </section>
 
       <section class="documents-view" id="pdf-view" aria-labelledby="pdf-title" hidden inert>
-        <div class="view-heading"><h1 id="pdf-title" tabindex="-1"></h1></div>
+        <div class="view-heading title-heading"><h1 id="pdf-title" tabindex="-1"></h1><div class="sound-slot" id="sound-slot-pdf-view"></div></div>
         <div class="pdf-actions">
           <button class="primary-button view-button" id="return-pdf" type="button">بازگشت به مظنونین</button>
           <a class="document-control" id="pdf-link" target="_blank" rel="noopener">باز کردن فایل PDF</a>
