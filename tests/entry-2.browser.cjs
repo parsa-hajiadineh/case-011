@@ -111,9 +111,131 @@ async function main() {
     if (takeScreenshots) await screenshot("desktop-result");
     console.log("Sequence timings (ms):", matchTime - start, referenceTime - matchTime, warningTime - referenceTime);
   };
+  const verifyCompactProcessing = async () => {
+    const observations = [];
+    const cases = [
+      { width: 1280, height: 900, record: true, name: "desktop" },
+      { width: 360, height: 640, name: "mobile-360x640" },
+      { width: 390, height: 844, record: true, name: "mobile-390x844" },
+      { width: 844, height: 390, name: "landscape-844x390" },
+      { width: 390, height: 844, reduced: true, record: true, name: "mobile-reduced" },
+      { width: 390, height: 844, reduced: true, largeText: true, name: "mobile-text-200" }
+    ];
+    const visibleOutput = () => read("(()=>{const r=document.querySelector('.output-panel').getBoundingClientRect();return r.top>=0&&r.bottom<=innerHeight})()");
+    for (const scenario of cases) {
+      await send("Emulation.setDeviceMetricsOverride", { width: scenario.width, height: scenario.height, screenWidth: scenario.width, screenHeight: scenario.height, deviceScaleFactor: 1, mobile: false });
+      await send("Emulation.setEmulatedMedia", { features: [{ name: "prefers-reduced-motion", value: scenario.reduced ? "reduce" : "no-preference" }] });
+      await load();
+      if (scenario.largeText) {
+        // Rendering stress only: no choices, result state, or timers are modified.
+        await send("DOM.enable");
+        await send("CSS.enable");
+        const { root } = await send("DOM.getDocument");
+        const { nodeId } = await send("DOM.querySelector", { nodeId: root.nodeId, selector: "html" });
+        await send("CSS.setEffectivePropertyValueForNode", { nodeId, propertyName: "font-size", value: "200%" });
+        assert.equal(await read("getComputedStyle(document.documentElement).fontSize"), "32px");
+      }
+      assert.equal(await read("document.documentElement.scrollWidth <= innerWidth"), true);
+      if (scenario.width <= 900) {
+        assert.equal(await read("document.querySelector('.output-panel').getBoundingClientRect().bottom < document.querySelector('.comparison-panel').getBoundingClientRect().top"), true);
+      } else {
+        assert.equal(await read("Math.abs(document.querySelector('.output-panel').getBoundingClientRect().top-document.querySelector('.comparison-panel').getBoundingClientRect().top)<2"), true);
+      }
+      await delay(650);
+      await screenshot(`${scenario.name}-compact-initial`);
+      for (let index = 0; index < 4; index++) {
+        await click(`.operator-slot[data-sample='${"BCDE"[index]}']`);
+        if (scenario.width <= 900) {
+          assert.equal(await visibleOutput(), true);
+          assert.equal(await read(`document.querySelector(".operator-slot[data-sample='${"BCDE"[index]}']").getBoundingClientRect().top >= document.querySelector('.output-panel').getBoundingClientRect().bottom`), true);
+          assert.equal(await read(`(()=>{const r=document.querySelector(".operator-slot[data-sample='${"BCDE"[index]}']").getBoundingClientRect(),p=document.querySelector('.comparison-panel').getBoundingClientRect();return r.top>=p.top&&r.bottom<=p.bottom})()`), true);
+        }
+        await click(`.operator-key[data-operator='${index === 1 ? "=" : "≠"}']`);
+        if (scenario.width <= 900) assert.equal(await visibleOutput(), true);
+      }
+      assert.deepEqual(await hiddenResults(), [true, true, true]);
+      await click("#submit-result");
+      const pageScroll = await read("scrollY");
+      for (const section of ["match-output", "reference-output", "warning-output", "open-original-record"]) {
+        await waitFor(`!document.getElementById('${section}').hidden`);
+        assert.equal(await read("scrollY"), pageScroll);
+        if (scenario.width <= 900) {
+          assert.equal(await visibleOutput(), true);
+          assert.equal(await read(`(()=>{const r=document.getElementById('${section}').getBoundingClientRect(),p=document.getElementById('output-scroll').getBoundingClientRect();return r.top<p.bottom&&r.bottom>p.top})()`), true);
+        }
+      }
+      assert.deepEqual(await hiddenResults(), [false, false, false]);
+      assert.equal(await read("document.querySelector('#warning-output p').textContent"), warning);
+      assert.equal(await read("document.getElementById('reference-output').textContent"), "Reference C: NORA AZARGOSHASB");
+      if (scenario.width <= 900) {
+        // Real wheel input can revisit earlier output without scrolling the page.
+        const point = await read("(()=>{const r=document.querySelector('#output-scroll').getBoundingClientRect();return{x:r.x+r.width/2,y:r.y+r.height/2}})()");
+        await send("Input.dispatchMouseEvent", { type: "mouseWheel", deltaY: -1500, deltaX: 0, ...point });
+        await delay(200);
+        assert.equal(await read("document.getElementById('output-scroll').scrollTop"), 0);
+        assert.equal(await read("scrollY"), pageScroll);
+        await send("Input.dispatchMouseEvent", { type: "mouseWheel", deltaY: 1500, deltaX: 0, ...point });
+        await delay(200);
+        assert.equal(await read("scrollY"), pageScroll);
+      }
+      assert.equal(await read("document.documentElement.scrollWidth <= innerWidth"), true);
+      await screenshot(`${scenario.name}-compact-result`);
+      console.log(`PASS ${scenario.name}: output stays visible during input, internal staged scrolling leaves page at ${pageScroll}px, earlier result sections reachable, no horizontal overflow.`);
+      if (scenario.width === 390 && !scenario.largeText) {
+        assert.equal(await read("(()=>{const w=document.querySelector('#warning-output').getBoundingClientRect(),p=document.querySelector('#output-scroll').getBoundingClientRect(),b=document.querySelector('#open-original-record').getBoundingClientRect();return w.top>=p.top&&w.bottom<=p.bottom&&b.top>=p.top&&b.bottom<=p.bottom})()"), true);
+      }
+      if (!scenario.record || process.argv.includes("--layout-only")) continue;
+      const started = Date.now();
+      await click("#open-original-record", 2);
+      assert.equal(await read("decodingGeneration"), 1);
+      assert.equal(await read("document.querySelectorAll('#corruption-notice').length"), 1);
+      const status = await read("document.getElementById('record-status').textContent");
+      for (const at of [700, 4100, 8300, 12400]) {
+        await delay(Math.max(0, at - (Date.now() - started)));
+        const state = await read("(()=>{const styles=selector=>{const s=getComputedStyle(document.querySelector(selector));return{name:s.animationName,state:s.animationPlayState,transform:s.transform,opacity:s.opacity}};return{outer:styles('.emblem-ring-outer'),middle:styles('.emblem-ring-middle'),inner:styles('.emblem-ring-inner'),sweep:styles('.core-sweep'),light:styles('.core-light'),nodes:[...document.querySelectorAll('.processing-node')].map(e=>getComputedStyle(e).opacity),animations:document.querySelector('.decoding-emblem').getAnimations({subtree:true}).map(e=>({state:e.playState,time:e.currentTime,duration:e.effect.getTiming().duration})),reduced:matchMedia('(prefers-reduced-motion: reduce)').matches}})()");
+        observations.push({ scenario: scenario.name, elapsed: Date.now() - started, ...state });
+        assert.equal(await read("document.getElementById('open-decoded-record').hidden"), true);
+        assert.equal(await read("document.getElementById('record-status').textContent"), status);
+        if (scenario.reduced) {
+          assert.equal(state.outer.name, "none");
+          assert.equal(state.middle.name, "none");
+          assert.equal(state.sweep.name, "none");
+          assert.equal(state.light.name, "emblem-light");
+        } else {
+          assert.equal(state.outer.name, "emblem-rotate");
+          assert.equal(state.middle.name, "emblem-rotate");
+          assert.equal(state.outer.state, "running");
+          assert.equal(state.sweep.name, "emblem-scan");
+          assert(state.animations.length >= 8);
+          assert(state.animations.every(animation => animation.state === "running"));
+        }
+        await screenshot(`${scenario.name}-emblem-${at}`);
+      }
+      const frames = observations.filter(frame => frame.scenario === scenario.name);
+      assert(new Set(frames.map(frame => frame.light.opacity)).size > 2);
+      if (!scenario.reduced) {
+        for (const element of ["outer", "middle", "inner", "sweep"]) assert(new Set(frames.map(frame => frame[element].transform)).size === 4);
+        assert(new Set(frames.map(frame => JSON.stringify(frame.nodes))).size > 2);
+      }
+      const completed = await waitFor("!document.getElementById('open-decoded-record').hidden", 40, 4000);
+      assert(completed - started >= 14900 && completed - started < 16000);
+      assert.equal(await read("document.querySelector('.decoding-emblem').getAnimations({subtree:true}).length"), 0);
+      await screenshot(`${scenario.name}-emblem-complete`);
+      await click("#open-decoded-record");
+      assert.equal(await read("document.getElementById('decoded-record-view').hidden"), false);
+      assert.equal(await read("document.querySelectorAll('#decoded-record-view button').length"), 0);
+      console.log(`PASS ${scenario.name}: continuous observed motion at 0.7/4.1/8.3/12.4s, completion ${completed-started}ms, no duplicate timers, all motion stops at completion.`);
+    }
+    fs.writeFileSync(path.join(output, "emblem-observations.json"), JSON.stringify(observations, null, 2));
+    assert.equal(errors.length, 0);
+  };
   try {
     await send("Runtime.enable");
     await send("Page.enable");
+    if (process.argv.includes("--compact-processing")) {
+      await verifyCompactProcessing();
+      return;
+    }
     const { windowId } = await send("Browser.getWindowForTarget", { targetId: tab.id });
     await send("Browser.setWindowBounds", { windowId, bounds: { width: 1280, height: 900 } });
     await send("Emulation.setDeviceMetricsOverride", { width: 1280, height: 900, screenWidth: 1280, screenHeight: 900, positionX: 0, positionY: 0, deviceScaleFactor: 1, mobile: false });
@@ -125,6 +247,27 @@ async function main() {
     assert.equal(await read("document.querySelectorAll('.operator-key').length"), 2);
     assert.equal(await read("document.querySelectorAll('input,textarea,[contenteditable=true],a').length"), 0);
     await screenshot("desktop-initial");
+    if (process.argv.includes("--diagnose-motion")) {
+      const observations = [];
+      for (const motion of ["no-preference", "reduce"]) {
+        await send("Emulation.setEmulatedMedia", { features: [{ name: "prefers-reduced-motion", value: motion }] });
+        await load();
+        await fill(["≠", "=", "≠", "≠"]);
+        await success();
+        await waitFor("!document.getElementById('open-original-record').hidden");
+        await click("#open-original-record");
+        const started = Date.now();
+        for (const at of [0, 700, 3500, 8000, 12500]) {
+          await delay(Math.max(0, at - (Date.now() - started)));
+          const observation = await read("(()=>{const r=document.querySelector('.emblem-ring-outer'),s=getComputedStyle(r),a=getComputedStyle(document.querySelector('.core-light'));return{reduced:matchMedia('(prefers-reduced-motion: reduce)').matches,state:document.querySelector('.corruption-notice').dataset.state,animation:s.animationName,playState:s.animationPlayState,transform:s.transform,scanAnimation:a.animationName,scanOpacity:a.opacity,animations:r.getAnimations().map(e=>({state:e.playState,time:e.currentTime,keyframes:e.effect.getKeyframes()}))}})()");
+          observations.push({ motion, at: Date.now() - started, ...observation });
+        }
+        console.log("DIAGNOSIS", motion, JSON.stringify(observations.filter(e => e.motion === motion)));
+      }
+      fs.mkdirSync(output, { recursive: true });
+      fs.writeFileSync(path.join(output, "motion-diagnosis.json"), JSON.stringify(observations, null, 2));
+      return;
+    }
     if (process.argv.includes("--capture-record-mobile")) {
       await send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 1, mobile: false });
       await send("Emulation.setEmulatedMedia", { features: [{ name: "prefers-reduced-motion", value: "reduce" }] });
@@ -241,22 +384,22 @@ async function main() {
       assert.equal(await read("document.querySelectorAll('.record-back,#back-to-result,#back-to-original').length"), 0);
       assert.equal(await read("document.querySelectorAll('#original-record-view button').length"), 1);
       const statusWhileLoading = await read("document.getElementById('record-status').textContent");
-      const firstTransform = await read("getComputedStyle(document.querySelector('.ring-rotor')).transform");
+      const firstTransform = await read("getComputedStyle(document.querySelector('.emblem-ring-outer')).transform");
       if (reduced) {
-        assert.equal(await read("getComputedStyle(document.querySelector('.ring-rotor')).animationName"), "none");
-        assert.equal(await read("getComputedStyle(document.querySelector('.ring-scan')).animationName"), "decoding-settle");
-        assert.equal(await read("getComputedStyle(document.querySelector('.ring-scan')).animationIterationCount"), "1");
-        const initialOpacity = await read("Number(getComputedStyle(document.querySelector('.ring-scan')).opacity)");
+        assert.equal(await read("getComputedStyle(document.querySelector('.emblem-ring-outer')).animationName"), "none");
+        assert.equal(await read("getComputedStyle(document.querySelector('.core-light')).animationName"), "emblem-light");
+        assert.equal(await read("getComputedStyle(document.querySelector('.core-light')).animationIterationCount"), "infinite");
+        const initialOpacity = await read("Number(getComputedStyle(document.querySelector('.core-light')).opacity)");
         await delay(450);
-        assert.equal(await read("getComputedStyle(document.querySelector('.ring-rotor')).transform"), firstTransform);
-        assert(await read("Number(getComputedStyle(document.querySelector('.ring-scan')).opacity)") > initialOpacity);
+        assert.equal(await read("getComputedStyle(document.querySelector('.emblem-ring-outer')).transform"), firstTransform);
+        assert(await read("Number(getComputedStyle(document.querySelector('.core-light')).opacity)") > initialOpacity);
       } else {
-        assert.equal(await read("getComputedStyle(document.querySelector('.ring-rotor')).animationName"), "decoding-rotate");
-        assert.equal(await read("getComputedStyle(document.querySelector('.ring-rotor')).animationPlayState"), "running");
-        const firstTime = await read("document.querySelector('.ring-rotor').getAnimations()[0].currentTime");
+        assert.equal(await read("getComputedStyle(document.querySelector('.emblem-ring-outer')).animationName"), "emblem-rotate");
+        assert.equal(await read("getComputedStyle(document.querySelector('.emblem-ring-outer')).animationPlayState"), "running");
+        const firstTime = await read("document.querySelector('.emblem-ring-outer').getAnimations()[0].currentTime");
         await delay(450);
-        assert.notEqual(await read("getComputedStyle(document.querySelector('.ring-rotor')).transform"), firstTransform);
-        assert(await read("document.querySelector('.ring-rotor').getAnimations()[0].currentTime") > firstTime + 300);
+        assert.notEqual(await read("getComputedStyle(document.querySelector('.emblem-ring-outer')).transform"), firstTransform);
+        assert(await read("document.querySelector('.emblem-ring-outer').getAnimations()[0].currentTime") > firstTime + 300);
       }
       assert.equal(await read("document.getElementById('record-status').textContent"), statusWhileLoading);
       await screenshot(`${prefix}-decoding`);
@@ -267,8 +410,8 @@ async function main() {
       assert.equal(await read("document.getElementById('open-decoded-record').hidden"), true);
       const readyTime = await waitFor("!document.getElementById('open-decoded-record').hidden", 40, 4000);
       assert(readyTime - decodingStart >= 14900 && readyTime - decodingStart <= 16000);
-      assert.equal(await read("getComputedStyle(document.querySelector('.ring-rotor')).animationName"), "none");
-      assert.equal(await read("getComputedStyle(document.querySelector('.ring-scan')).animationName"), "none");
+      assert.equal(await read("getComputedStyle(document.querySelector('.emblem-ring-outer')).animationName"), "none");
+      assert.equal(await read("getComputedStyle(document.querySelector('.core-light')).animationName"), "none");
       assert.equal(await read("document.getElementById('corruption-title').textContent"), "File corrupted");
       await screenshot(`${prefix}-decoding-ready`);
       await click("#open-decoded-record");
@@ -287,7 +430,7 @@ async function main() {
       await screenshot(`${prefix}-decoded-record`);
       assert.equal(await read("document.querySelectorAll('#decoded-record-view button').length"), 0);
       assert.equal(await read("decodingTimer === null"), true);
-      console.log(`PASS ${prefix}: warning delay ${actionTime - warningShown}ms; decoding ${readyTime - decodingStart}ms; ${reduced ? "finite reduced-motion emphasis without rotation" : "verified changing transform and advancing rotation time"}; motion stops on completion; exact independently decoded Morse; forward only, focus and inert views.`);
+      console.log(`PASS ${prefix}: warning delay ${actionTime - warningShown}ms; decoding ${readyTime - decodingStart}ms; ${reduced ? "gentle reduced-motion intensity without rotation" : "verified changing transform and advancing rotation time"}; motion stops on completion; exact independently decoded Morse; forward only, focus and inert views.`);
     };
     await send("Emulation.setDeviceMetricsOverride", { width: 1280, height: 900, screenWidth: 1280, screenHeight: 900, deviceScaleFactor: 1, mobile: false });
     await send("Emulation.setEmulatedMedia", { features: [{ name: "prefers-reduced-motion", value: "no-preference" }] });

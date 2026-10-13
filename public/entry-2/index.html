@@ -2,7 +2,7 @@
 <html lang="fa" dir="rtl">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0c1723">
   <title>PATTERN DATABASE · CASE 011</title>
   <link rel="preload" href="../entry-1/assets/fonts/Vazirmatn-Variable.woff2" as="font" type="font/woff2" crossorigin>
@@ -17,15 +17,14 @@
         <svg class="lab-mark" viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M10 3h12M12 3v10L5 25a3 3 0 0 0 3 4h16a3 3 0 0 0 3-4l-7-12V3M9 21h14"/><path d="M13 24h2m4 0h2"/></svg>
         <div class="lab-title-block">
           <p class="institution-title">سامانه بایگانی و ثبت الگوهای ژنتیکی نمونههای زیستی</p>
-          <p class="database-identifier" dir="ltr">PATTERN DATABASE</p>
+          <div class="lab-secondary"><p class="database-identifier" dir="ltr">PATTERN DATABASE</p><span class="case-identifier" dir="ltr">CASE 011</span></div>
         </div>
       </div>
-      <span class="case-identifier" dir="ltr">CASE 011</span>
     </header>
 
     <main>
       <div class="database-layout" id="database-view">
-      <section class="comparison-panel" aria-labelledby="comparison-title">
+      <section class="comparison-panel" aria-labelledby="comparison-title" tabindex="0">
         <div class="panel-heading">
           <span class="heading-rule" aria-hidden="true"></span>
           <h1 id="comparison-title">نتیجه آزمایش را وارد کنید</h1>
@@ -57,7 +56,7 @@
           <path class="sample-bands" d="M30 18v17m0 10v29m0 12v17M90 10v22m0 13v12m0 12v34M150 19v14m0 12v39m0 12v15M210 12v33m0 12v18m0 11v20M270 20v24m0 14v13m0 14v25M330 12v24m0 13v32m0 11v14"/>
           <path class="sample-crosshair" d="M6 6h12M6 6v12M354 6h-12M354 6v12M6 114h12M6 114v-12M354 114h-12M354 114v-12"/>
         </svg>
-        <div class="output-content">
+        <div class="output-content" id="output-scroll" tabindex="0" role="region" aria-label="نتیجه تطبیق">
           <svg class="output-idle" id="output-idle" viewBox="0 0 280 260" fill="none" aria-hidden="true">
             <path d="M70 205V120a70 70 0 0 1 140 0v85M86 220V121a54 54 0 0 1 108 0v99M102 228V122a38 38 0 0 1 76 0v106M118 215v-92a22 22 0 0 1 44 0v92M134 200v-76a6 6 0 0 1 12 0v76"/>
             <path class="idle-frame" d="M25 48V25h23M232 25h23v23M25 212v23h23M232 235h23v-23M20 130h240"/>
@@ -87,11 +86,21 @@
           <div class="corruption-notice" id="corruption-notice" role="dialog" aria-modal="false" aria-labelledby="corruption-title" aria-describedby="corruption-description" tabindex="-1" data-state="decoding">
             <h2 id="corruption-title" dir="ltr">File corrupted</h2>
             <p id="corruption-description" dir="ltr">Decoding required</p>
-            <svg class="decoding-ring" viewBox="0 0 64 64" fill="none" aria-hidden="true">
-              <circle class="ring-track" cx="32" cy="32" r="24"/>
-              <g class="ring-rotor"><circle class="ring-segments" cx="32" cy="32" r="24"/><circle class="ring-scan" cx="32" cy="32" r="24"/></g>
-              <circle class="ring-core" cx="32" cy="32" r="16"/>
-              <path d="M28 32h8M32 28v8"/>
+            <svg class="decoding-emblem" viewBox="0 0 120 120" fill="none" aria-hidden="true">
+              <defs>
+                <clipPath id="decoding-core-clip"><path d="m60 39 21 21-21 21-21-21Z"/></clipPath>
+                <linearGradient id="decoding-sweep-light"><stop stop-color="#91d5df" stop-opacity="0"/><stop offset=".5" stop-color="#91d5df" stop-opacity=".45"/><stop offset="1" stop-color="#91d5df" stop-opacity="0"/></linearGradient>
+              </defs>
+              <circle class="emblem-track" cx="60" cy="60" r="53"/>
+              <g class="emblem-ring emblem-ring-outer"><circle cx="60" cy="60" r="53"/><path class="emblem-ring-accent" d="M60 7a53 53 0 0 1 46 26"/></g>
+              <g class="emblem-ring emblem-ring-middle"><circle cx="60" cy="60" r="42"/><path class="emblem-ring-accent" d="M18 60a42 42 0 0 1 12-30"/></g>
+              <g class="emblem-ring emblem-ring-inner"><circle cx="60" cy="60" r="31"/><path d="M60 25v8m35 27h-8M60 95v-8m-35-27h8"/></g>
+              <g class="emblem-core">
+                <path class="core-frame" d="m60 39 21 21-21 21-21-21Z M60 48l12 12-12 12-12-12Z"/>
+                <g clip-path="url(#decoding-core-clip)"><rect class="core-sweep" x="52" y="38" width="16" height="44" fill="url(#decoding-sweep-light)"/></g>
+                <path class="core-light" d="M55 60h10m-5-5v10"/>
+              </g>
+              <g class="processing-nodes"><circle class="processing-node" cx="60" cy="7" r="2.3"/><circle class="processing-node" cx="113" cy="60" r="2.3"/><circle class="processing-node" cx="60" cy="113" r="2.3"/><circle class="processing-node" cx="7" cy="60" r="2.3"/></g>
             </svg>
             <button class="archive-action" id="open-decoded-record" type="button" dir="ltr" hidden>VIEW DECODED FILE</button>
           </div>

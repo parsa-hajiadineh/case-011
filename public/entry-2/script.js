@@ -7,9 +7,23 @@ const submitResult = document.getElementById("submit-result");
 const comparisonError = document.getElementById("comparison-error");
 const databaseStatus = document.getElementById("database-status");
 const checkingState = document.getElementById("checking-state");
+const outputScroll = document.getElementById("output-scroll");
 const choices = Array(slots.length).fill(null);
 let selectedSlot = 0;
 let resultPending = false;
+
+function revealOutput(section) {
+  section.hidden = false;
+  // Scroll only the bounded mobile output region, never the document viewport.
+  if (window.matchMedia("(max-width: 900px)").matches) {
+    const viewport = outputScroll.getBoundingClientRect();
+    const target = section.getBoundingClientRect();
+    const destination = target.height <= outputScroll.clientHeight
+      ? target.bottom - viewport.bottom + outputScroll.scrollTop + 8
+      : target.top - viewport.top + outputScroll.scrollTop - 8;
+    outputScroll.scrollTo({ top: Math.max(0, destination), behavior: "instant" });
+  }
+}
 
 function renderSlots() {
   slots.forEach((slot, index) => {
@@ -66,27 +80,27 @@ comparisonForm.addEventListener("submit", (event) => {
   [...slots, ...operatorKeys, submitResult].forEach((control) => { control.disabled = true; });
   comparisonForm.setAttribute("aria-busy", "true");
   document.getElementById("output-idle").setAttribute("hidden", "");
-  checkingState.hidden = false;
+  revealOutput(checkingState);
   databaseStatus.textContent = checkingState.textContent;
 
   // Timers control the narrative sequence independently of CSS animation support.
   window.setTimeout(() => {
     checkingState.hidden = true;
     const match = document.getElementById("match-output");
-    match.hidden = false;
+    revealOutput(match);
     databaseStatus.textContent = match.textContent.trim();
     window.setTimeout(() => {
       const reference = document.getElementById("reference-output");
-      reference.hidden = false;
+      revealOutput(reference);
       databaseStatus.textContent = reference.textContent;
       window.setTimeout(() => {
         const warning = document.getElementById("warning-output");
-        warning.hidden = false;
+        revealOutput(warning);
         databaseStatus.textContent = warning.textContent.trim();
         comparisonForm.removeAttribute("aria-busy");
         const fadeDuration = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 280;
         window.setTimeout(() => {
-          document.getElementById("open-original-record").hidden = false;
+          revealOutput(document.getElementById("open-original-record"));
           databaseStatus.textContent = "VIEW ORIGINAL RECORD";
         }, 2000 + fadeDuration);
       }, 1200);
