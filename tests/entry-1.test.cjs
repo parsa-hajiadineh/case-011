@@ -122,8 +122,8 @@ test("documents are visible but locked until evidence return, remain unlocked, a
   assert.equal(f.get("selected-documents").hidden, false);
   assert.equal(f.get("selected-documents").disabled, true);
   assert.equal(f.get("selected-documents").attributes["data-state"], "locked");
-  assert.equal(f.get("documents-lock-path").attributes.d, "M8 10V7a4 4 0 0 1 8 0v3");
-  assert.equal(f.get("documents-state").textContent, "برای دسترسی به مدارک، شواهد را بررسی کنید و به مظنونین بازگردید.");
+  assert.equal(f.get("documents-lock").attributes.hidden, undefined);
+  assert.equal(f.get("selected-documents").attributes["aria-disabled"], "true");
   f.get("selected-documents").click();
   assert.equal(f.get("document-categories").hidden, true);
   // Check the state guard independently of native disabled activation semantics.
@@ -139,8 +139,8 @@ test("documents are visible but locked until evidence return, remain unlocked, a
   assert.equal(f.get("selected-documents").hidden, false);
   assert.equal(f.get("selected-documents").disabled, false);
   assert.equal(f.get("selected-documents").attributes["data-state"], "unlocked");
-  assert.equal(f.get("documents-lock-path").attributes.d, "M8 10V7a4 4 0 0 1 8 0");
-  assert.equal(f.get("documents-state").textContent, "مدارک منتخب کارآگاه در دسترس است.");
+  assert.equal(f.get("documents-lock").attributes.hidden, "");
+  assert.equal(f.get("selected-documents").attributes["aria-disabled"], "false");
   assert.equal(f.window.scrollY, 1400);
   assert.equal(f.focused(), "open-evidence");
   for (const expanded of [true, false, true]) {
@@ -156,6 +156,23 @@ test("documents are visible but locked until evidence return, remain unlocked, a
   assert.equal(reloaded.get("selected-documents").hidden, false);
   assert.equal(reloaded.get("selected-documents").disabled, true);
   assert.equal(reloaded.get("selected-documents").attributes["data-state"], "locked");
+});
+
+test("the actual evidence-return handler enables documents before suspect view focus", () => {
+  const f = fixture();
+  f.unlock();
+  f.get("open-evidence").click();
+  let observed;
+  f.get("open-evidence").focus = () => {
+    observed = {
+      disabled: f.get("selected-documents").disabled,
+      accessible: f.get("selected-documents").attributes["aria-disabled"],
+      visual: f.get("selected-documents").attributes["data-state"],
+      hidden: f.get("destination-view").hidden
+    };
+  };
+  f.get("return-suspects").click();
+  assert.deepEqual(observed, { disabled: false, accessible: "false", visual: "unlocked", hidden: false });
 });
 
 test("all category controls and five document viewers return with scroll and focus intact", async () => {
@@ -316,7 +333,7 @@ test("dossiers and PDF bytes are preserved; controls have no obsolete placement 
   const suspectHeading = html.slice(html.indexOf('id="destination-view"'), html.indexOf('<div class="dossier-grid">'));
   assert(!suspectHeading.includes('id="selected-documents"'));
   assert(suspectHeading.includes('id="sound-slot-destination-view"'));
-  const actions = html.slice(html.indexOf('class="view-actions suspect-actions"'), html.indexOf('id="evidence-view"'));
+  const actions = html.slice(html.indexOf('class="suspect-actions"'), html.indexOf('id="evidence-view"'));
   assert(actions.includes('id="selected-documents"'));
   assert(actions.indexOf('id="open-evidence"') < actions.indexOf('id="selected-documents"'));
   assert(actions.includes('id="document-categories"'));
@@ -324,6 +341,7 @@ test("dossiers and PDF bytes are preserved; controls have no obsolete placement 
   assert(/\bdisabled\b/.test(documentsTag));
   assert(!/\bhidden\b/.test(documentsTag));
   assert(!/documents-notice|jump-to-documents/.test(html + source));
+  assert(!/documents-state|برای دسترسی به مدارک/.test(html + source));
   assert(!html.includes("portal-footer"));
   const styles = fs.readFileSync(path.join(root, "public/entry-1/styles.css"), "utf8");
   assert(!/portal-footer|position:\s*fixed|padding-bottom:\s*120px/.test(styles));

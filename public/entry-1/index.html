@@ -214,13 +214,14 @@
             </section>
           </article>
         </div>
-        <div class="view-actions suspect-actions">
-          <button class="primary-button view-button" id="open-evidence" type="button">بررسی شواهد</button>
-          <button class="document-control view-button" id="selected-documents" type="button" disabled data-state="locked" aria-expanded="false" aria-controls="document-categories" aria-describedby="documents-state">
-            <svg class="documents-lock" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path id="documents-lock-path" d="M8 10V7a4 4 0 0 1 8 0v3"/><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M12 14v3"/></svg>
+        <div class="suspect-actions">
+          <div class="suspect-action-row">
+          <button class="primary-button" id="open-evidence" type="button">بررسی شواهد</button>
+          <button class="document-control" id="selected-documents" type="button" disabled aria-disabled="true" data-state="locked" aria-expanded="false" aria-controls="document-categories">
+            <svg class="documents-lock" id="documents-lock" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8 10V7a4 4 0 0 1 8 0v3"/><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M12 14v3"/></svg>
             <span>مدارک منتخب کارآگاه</span>
           </button>
-          <p class="documents-state" id="documents-state" role="status">برای دسترسی به مدارک، شواهد را بررسی کنید و به مظنونین بازگردید.</p>
+          </div>
           <div class="document-categories" id="document-categories" hidden>
             <button class="document-control" type="button" data-category="nora">مدارک مرتبط با نورا آذرگشسب</button>
             <button class="document-control" type="button" data-category="arash">مدارک مرتبط با آرش نادری</button>

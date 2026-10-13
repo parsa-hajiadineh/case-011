@@ -1,0 +1,173 @@
+"use strict";
+
+// Real Chromium checks through CDP. Launch an isolated local browser on port 9223.
+const fs = require("node:fs");
+const path = require("node:path");
+const assert = require("node:assert/strict");
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const output = path.resolve(__dirname, "../artifacts/entry-1-repair");
+
+async function main() {
+  const tabs = await (await fetch("http://127.0.0.1:9223/json/list")).json();
+  const tab = tabs.find((item) => item.type === "page" && /about:blank|localhost:8000\/entry-1/.test(item.url));
+  assert(tab, "An isolated test tab must be available");
+  const socket = new WebSocket(tab.webSocketDebuggerUrl);
+  await new Promise((resolve, reject) => { socket.onopen = resolve; socket.onerror = reject; });
+  let sequence = 0;
+  const pending = new Map();
+  const errors = [];
+  socket.onmessage = ({ data }) => {
+    const result = JSON.parse(data);
+    if (result.method === "Runtime.exceptionThrown") errors.push(result.params.exceptionDetails);
+    if (!result.id) return;
+    const call = pending.get(result.id);
+    pending.delete(result.id);
+    if (result.error) call.reject(new Error(JSON.stringify(result.error)));
+    else call.resolve(result.result);
+  };
+  const send = (method, params = {}) => new Promise((resolve, reject) => {
+    const id = ++sequence;
+    pending.set(id, { resolve, reject });
+    socket.send(JSON.stringify({ id, method, params }));
+  });
+  const evaluate = async (expression) => {
+    const result = await send("Runtime.evaluate", { expression, returnByValue: true, awaitPromise: true });
+    if (result.exceptionDetails) throw new Error(JSON.stringify(result.exceptionDetails));
+    return result.result.value;
+  };
+  const waitFor = async (expression) => {
+    for (let attempt = 0; attempt < 100; attempt++) {
+      if (await evaluate(expression)) return;
+      await delay(100);
+    }
+    throw new Error(`Timed out: ${expression}`);
+  };
+  const click = async (selector) => {
+    await evaluate(`document.querySelector(${JSON.stringify(selector)}).scrollIntoView({block:'center',behavior:'instant'})`);
+    const point = await evaluate(`(()=>{const r=document.querySelector(${JSON.stringify(selector)}).getBoundingClientRect();return{x:r.x+r.width/2,y:r.y+r.height/2}})()`);
+    await send("Input.dispatchMouseEvent", { type: "mousePressed", button: "left", clickCount: 1, ...point });
+    await send("Input.dispatchMouseEvent", { type: "mouseReleased", button: "left", clickCount: 1, ...point });
+  };
+  const screenshot = async (name) => {
+    fs.mkdirSync(output, { recursive: true });
+    const result = await send("Page.captureScreenshot", { format: "png" });
+    fs.writeFileSync(path.join(output, name + ".png"), Buffer.from(result.data, "base64"));
+  };
+  const state = () => evaluate(`(()=>{const ids=['open-evidence','selected-documents','sound-toggle'];return{views:[...document.querySelectorAll('main > section')].map(e=>({id:e.id,hidden:e.hidden,inert:e.inert})),controls:ids.map(id=>{const e=document.getElementById(id),r=e.getBoundingClientRect(),s=getComputedStyle(e);return{id,disabled:e.disabled,hidden:e.hidden,width:r.width,height:r.height,x:r.x,y:r.y,display:s.display,flex:s.flex,minHeight:s.minHeight,parent:e.parentElement.id||e.parentElement.className}}),unlocked:documentsUnlocked,soundCount:document.querySelectorAll('#sound-toggle').length}})()`);
+  try {
+    await send("Runtime.enable");
+    await send("Page.enable");
+    await send("Emulation.setDeviceMetricsOverride", { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false });
+    await send("Page.navigate", { url: "http://localhost:8000/entry-1/" });
+    await waitFor("!!document.getElementById('archive-number')");
+    await click("#archive-number");
+    await send("Input.insertText", { text: "0806" });
+    await click("#submit-button");
+    await waitFor("!document.getElementById('destination-view').hidden");
+    const initialState = await state();
+    console.log("INITIAL", JSON.stringify(initialState));
+    for (const control of initialState.controls.slice(0, 2)) {
+      assert.equal(control.height, 48);
+      assert(control.width < 240);
+    }
+    assert(initialState.controls[0].x > initialState.controls[1].x);
+    assert.equal(initialState.controls[0].y, initialState.controls[1].y);
+    assert.equal(initialState.controls[2].height, 44);
+    assert(initialState.controls[2].y > 0 && initialState.controls[2].y < 900);
+    await click("#selected-documents");
+    assert.equal(await evaluate("document.getElementById('document-categories').hidden"), true);
+    await screenshot("desktop-actions-locked");
+    await click("#open-evidence");
+    await waitFor("!document.getElementById('evidence-view').hidden");
+    console.log("EVIDENCE", JSON.stringify(await state()));
+    await click("#return-suspects");
+    await waitFor("!document.getElementById('destination-view').hidden");
+    console.log("RETURN", JSON.stringify(await state()));
+    console.log("ERRORS", JSON.stringify(errors));
+    assert.equal(await evaluate("document.getElementById('selected-documents').disabled"), false);
+    assert.equal(await evaluate("document.getElementById('selected-documents').getAttribute('aria-disabled')"), "false");
+    assert.equal(await evaluate("getComputedStyle(document.getElementById('documents-lock')).display"), "none");
+    await screenshot("desktop-actions-unlocked");
+    await evaluate("window.scrollTo({top:0,behavior:'instant'})");
+    await screenshot("desktop-heading");
+    const key = async (value, code) => {
+      await send("Input.dispatchKeyEvent", { type: "keyDown", key: value, code, windowsVirtualKeyCode: value === "Enter" ? 13 : 9, ...(value === "Enter" ? { text: "\r", unmodifiedText: "\r" } : {}) });
+      await send("Input.dispatchKeyEvent", { type: "keyUp", key: value, code, windowsVirtualKeyCode: value === "Enter" ? 13 : 9 });
+    };
+    await click("#sound-toggle");
+    await waitFor("soundEnabled && audioContext.state === 'running'");
+    await evaluate("window.testAudioContext = audioContext");
+    await click("#selected-documents");
+    assert.equal(await evaluate("document.getElementById('document-categories').hidden"), false);
+    assert.equal(await evaluate("document.activeElement.id"), "selected-documents");
+    await key("Enter", "Enter");
+    assert.equal(await evaluate("document.getElementById('document-categories').hidden"), true);
+    await key("Enter", "Enter");
+    assert.equal(await evaluate("document.getElementById('document-categories').hidden"), false);
+    const mappings = [
+      ["nora", ["nora-fingerprint-forensic-report.pdf", "nora-local-inquiry-report.pdf"]],
+      ["arash", ["arash-telecom-record.pdf"]],
+      ["kamran", ["kamran-telecom-record.pdf", "cctv-footage-review-report.pdf"]]
+    ];
+    for (const [category, files] of mappings) {
+      await click(`#category-${category}`);
+      await waitFor("!document.getElementById('category-view').hidden");
+      assert.equal(await evaluate("document.querySelectorAll('#document-list > li').length"), files.length);
+      await click("#return-category");
+      assert.equal(await evaluate("document.getElementById('selected-documents').disabled"), false);
+      for (let i = 0; i < files.length; i++) {
+        await click(`#category-${category}`);
+        await waitFor("document.querySelectorAll('#document-list button:not(:disabled)').length === " + files.length);
+        await click(`#document-list > li:nth-child(${i + 1}) button`);
+        await waitFor("!document.getElementById('pdf-view').hidden");
+        assert.equal(await evaluate("document.querySelector('#pdf-container iframe').getAttribute('src')"), "assets/evidence/" + files[i]);
+        assert.equal(await evaluate("document.getElementById('pdf-link').getAttribute('href')"), "assets/evidence/" + files[i]);
+        assert.equal(await evaluate("audioContext === window.testAudioContext && soundEnabled"), true);
+        if (category === "nora" && i === 0) {
+          await delay(1200);
+          await screenshot("desktop-pdf");
+        }
+        await click("#return-pdf");
+        assert.equal(await evaluate("document.getElementById('selected-documents').disabled"), false);
+      }
+    }
+    await click("#sound-toggle");
+    await waitFor("!soundEnabled && audioContext.state === 'suspended'");
+    await send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 1, mobile: false });
+    await send("Page.reload");
+    await waitFor("!!document.getElementById('archive-number') && !document.getElementById('access-view').hidden");
+    await click("#archive-number");
+    await send("Input.insertText", { text: "0806" });
+    await click("#submit-button");
+    await waitFor("!document.getElementById('destination-view').hidden");
+    await screenshot("mobile-heading");
+    assert.equal(await evaluate("document.getElementById('selected-documents').disabled"), true);
+    await click("#selected-documents");
+    assert.equal(await evaluate("document.getElementById('document-categories').hidden"), true);
+    await screenshot("mobile-actions-locked");
+    await click("#open-evidence");
+    await key("Tab", "Tab");
+    // The visible sound button follows the title in the focus order.
+    assert.equal(await evaluate("document.activeElement.id"), "sound-toggle");
+    await click("#return-suspects");
+    assert.equal(await evaluate("document.getElementById('selected-documents').disabled"), false);
+    const mobileState = await state();
+    for (const control of mobileState.controls.slice(0, 2)) {
+      assert.equal(control.height, 48);
+      assert(control.width <= 390);
+    }
+    assert.equal(await evaluate("document.documentElement.scrollWidth <= innerWidth"), true);
+    await screenshot("mobile-actions-unlocked");
+    await click("#selected-documents");
+    await click("#category-arash");
+    await waitFor("!!document.querySelector('#document-list button:not(:disabled)')");
+    await click("#document-list button");
+    await waitFor("!document.getElementById('pdf-view').hidden");
+    await click("#return-pdf");
+    assert.equal(await evaluate("document.getElementById('selected-documents').disabled"), false);
+    assert.equal(await evaluate("document.querySelectorAll('#sound-toggle').length"), 1);
+    assert.equal(errors.length, 0);
+    console.log("PASS: real Edge clicks, disabled lock, evidence-return unlock, keyboard expansion, all five PDF routes, category/PDF returns, sound activation/mute and context preservation, reload reset, 390px compact layout and no horizontal overflow.");
+  } finally { socket.close(); }
+}
+main().catch((error) => { console.error(error); process.exitCode = 1; });

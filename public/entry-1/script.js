@@ -76,12 +76,12 @@ let suspectReturnFocus = "open-evidence";
 
 function renderDocumentsControl() {
   documentsButton.disabled = !documentsUnlocked;
+  documentsButton.setAttribute("aria-disabled", String(!documentsUnlocked));
   documentsButton.setAttribute("data-state", documentsUnlocked ? "unlocked" : "locked");
-  document.getElementById("documents-lock-path").setAttribute("d", documentsUnlocked
-    ? "M8 10V7a4 4 0 0 1 8 0" : "M8 10V7a4 4 0 0 1 8 0v3");
-  document.getElementById("documents-state").textContent = documentsUnlocked
-    ? "مدارک منتخب کارآگاه در دسترس است."
-    : "برای دسترسی به مدارک، شواهد را بررسی کنید و به مظنونین بازگردید.";
+  const lockIcon = document.getElementById("documents-lock");
+  // SVG elements require the attribute; HTMLElement.hidden is not reflected here.
+  if (documentsUnlocked) lockIcon.setAttribute("hidden", "");
+  else lockIcon.removeAttribute("hidden");
   if (!documentsUnlocked) categoryPanel.hidden = true;
   documentsButton.setAttribute("aria-expanded", String(!categoryPanel.hidden));
 }
