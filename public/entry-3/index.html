@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#191714">
+  <title>CASE ARCHIVE · CASE 011</title>
+  <link rel="preload" href="../entry-1/assets/fonts/Vazirmatn-Variable.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="../shared/foundation.css">
+  <link rel="stylesheet" href="styles.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <div class="archive-shell">
+    <header class="archive-header">
+      <div class="institution">
+        <svg class="archive-mark" viewBox="0 0 40 48" fill="none" aria-hidden="true"><path d="M5 40V18a15 15 0 0 1 30 0v22M11 40V18a9 9 0 0 1 18 0v22M17 40V18a3 3 0 0 1 6 0v22M2 44h36M2 8h3m30 0h3"/><path d="M13 30h14M13 34h14"/></svg>
+        <div><p class="institution-title">سامانه بایگانی پروندهها</p><p class="institution-identifier" dir="ltr">CASE ARCHIVE</p></div>
+      </div>
+      <div class="header-tools">
+        <span class="case-reference" dir="ltr">CASE 011</span>
+        <button id="sound-toggle" class="sound-toggle" type="button" aria-pressed="false" aria-label="روشن کردن صدا" aria-describedby="sound-error">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"/><path class="muted-icon" d="m17 9 5 6m0-6-5 6"/><path class="enabled-icon" d="M16 8a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14"/></svg>
+        </button>
+      </div>
+    </header>
+    <p id="sound-error" class="sound-error" role="status"></p>
+    <main>
+      <section id="search-view" class="archive-workspace" aria-labelledby="search-title">
+        <div class="search-area">
+          <div class="editorial-rule" aria-hidden="true"><span></span><i></i><i></i></div>
+          <p class="search-case" dir="ltr">CASE 011</p>
+          <h1 id="search-title" dir="ltr">Evidence ID</h1>
+          <form id="evidence-form" novalidate>
+            <div class="identifier-field" dir="ltr" role="group" aria-labelledby="search-title" aria-describedby="search-error">
+              <input id="evidence-letter" name="letter" type="text" maxlength="1" pattern="[A-Za-z]" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false" aria-label="حرف انگلیسی شناسه مدرک" enterkeyhint="next">
+              <span class="identifier-hyphen" aria-hidden="true">-</span>
+              <input id="evidence-number" name="number" type="text" maxlength="2" pattern="[0-9]{2}" inputmode="numeric" autocomplete="off" spellcheck="false" aria-label="دو رقم شناسه مدرک" enterkeyhint="search">
+            </div>
+            <button id="search-button" class="search-button" type="submit"><span>جستجو</span><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg></button>
+            <p id="search-error" class="search-error" role="alert"></p>
+          </form>
+        </div>
+        <div class="record-area" id="record-area" aria-busy="false">
+          <div class="record-idle" id="record-idle" aria-hidden="true">
+            <svg viewBox="0 0 320 300" fill="none"><path class="record-grid" d="M40 30v240M80 30v240M120 30v240M160 30v240M200 30v240M240 30v240M280 30v240M30 60h260M30 100h260M30 140h260M30 180h260M30 220h260M30 260h260"/><path class="record-seal" d="M91 244V111a69 69 0 0 1 138 0v133M105 244V111a55 55 0 0 1 110 0v133M119 244V111a41 41 0 0 1 82 0v133M133 244V111a27 27 0 0 1 54 0v133M147 244V111a13 13 0 0 1 26 0v133M71 256h178"/><path class="record-registration" d="M16 42V16h26M278 16h26v26M16 258v26h26M278 284h26v-26"/></svg>
+          </div>
+          <p id="retrieval-state" class="retrieval-state" hidden><span aria-hidden="true"></span>در حال بازیابی مدرک</p>
+          <article id="recovered-record" class="recovered-record" dir="ltr" lang="en" aria-labelledby="record-title" hidden>
+            <div class="record-topline" aria-hidden="true"><span>CASE ARCHIVE</span><svg viewBox="0 0 24 24" fill="none"><path d="m5 12 4 4 10-10"/></svg></div>
+            <h2 id="record-title" tabindex="-1">Evidence B-11</h2>
+            <p class="recovered-status">Status: Recovered</p>
+            <p class="recovery-date">Recovery Date: 2026</p>
+            <p class="case-reopened">Case Reopened</p>
+          </article>
+        </div>
+      </section>
+      <section id="details-view" class="details-view" aria-labelledby="details-title" hidden inert>
+        <h1 id="details-title" tabindex="-1">جزئیات مدرک <bdi dir="ltr">B-11</bdi></h1>
+      </section>
+    </main>
+    <p id="archive-status" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true"></p>
+  </div>
+  <div id="warning-backdrop" class="warning-backdrop" hidden aria-hidden="true"></div>
+  <dialog id="archive-warning" class="archive-warning" role="dialog" aria-modal="true" aria-labelledby="warning-message" aria-describedby="warning-source">
+    <svg class="warning-mark" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m12 3 10 18H2zM12 9v5m0 3v.5"/></svg>
+    <p id="warning-message">این مدرک در اسناد اولیه پرونده وجود نداشته است!</p>
+    <div class="warning-footer"><p id="warning-source">منبع: باماخ</p><button id="view-details" class="details-button" type="button" autofocus>مشاهده جزئیات<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M19 12H5m6-6-6 6 6 6"/></svg></button></div>
+  </dialog>
+</body>
+</html>
