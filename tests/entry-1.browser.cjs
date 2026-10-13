@@ -9,7 +9,7 @@ const output = path.resolve(__dirname, "../.local-verification/entry-1");
 
 async function main() {
   const tabs = await (await fetch("http://127.0.0.1:9223/json/list")).json();
-  const tab = tabs.find((item) => item.type === "page" && /about:blank|localhost:8000\/entry-1/.test(item.url));
+  const tab = tabs.find((item) => item.type === "page" && /about:blank|localhost:8000\//.test(item.url));
   assert(tab, "An isolated test tab must be available");
   const socket = new WebSocket(tab.webSocketDebuggerUrl);
   await new Promise((resolve, reject) => { socket.onopen = resolve; socket.onerror = reject; });
@@ -57,9 +57,25 @@ async function main() {
   try {
     await send("Runtime.enable");
     await send("Page.enable");
+    await send("Network.enable");
+    await send("Network.setCacheDisabled", { cacheDisabled: true });
     await send("Emulation.setDeviceMetricsOverride", { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false });
     await send("Page.navigate", { url: "http://localhost:8000/entry-1/" });
     await waitFor("!!document.getElementById('archive-number')");
+    await delay(1100);
+    await screenshot("desktop-archive");
+    if (process.argv.includes("--archive-only")) {
+      for (const [width, height] of [[360,640],[390,844],[390,500]]) {
+        await send("Emulation.setDeviceMetricsOverride", { width, height, deviceScaleFactor: 1, mobile: true });
+        const layout = await evaluate("(()=>{const a=document.querySelector('.archive-visual').getBoundingClientRect(),i=document.getElementById('archive-number').getBoundingClientRect();return{artwork:a.height,input:i.height,overflow:document.documentElement.scrollWidth>innerWidth}})()");
+        assert(layout.artwork >= 90 && layout.artwork <= 120);
+        assert.equal(layout.input, 64);
+        assert.equal(layout.overflow, false);
+        await screenshot(`archive-${width}x${height}`);
+      }
+      console.log("PASS: mobile archive artwork, full-size input, no horizontal overflow at 360x640, 390x844, and short 390x500.");
+      return;
+    }
     await click("#archive-number");
     await send("Input.insertText", { text: "0806" });
     await click("#submit-button");
@@ -79,6 +95,21 @@ async function main() {
     assert.equal(await evaluate("document.getElementById('documents-lock-label')"), null);
     assert.equal(await evaluate("document.getElementById('return-categories')"), null);
     await click("#selected-documents");
+    assert.equal(await evaluate("document.getElementById('document-categories').hidden"), true);
+    assert.equal(await evaluate("document.getElementById('locked-documents-dialog').open"), true);
+    assert.equal(await evaluate("document.getElementById('locked-documents-message').textContent"), "این دکمه توسط کاراگاه در این مرحله قفل شده است.");
+    assert.equal(await evaluate("document.activeElement.id"), "confirm-locked-documents");
+    await screenshot("desktop-locked-dialog");
+    await click("#confirm-locked-documents");
+    await waitFor("!document.getElementById('locked-documents-dialog').open");
+    assert.equal(await evaluate("document.activeElement.id"), "selected-documents");
+    await send("Input.dispatchKeyEvent", { type: "keyDown", key: "Enter", code: "Enter", windowsVirtualKeyCode: 13, text: "\r", unmodifiedText: "\r" });
+    await send("Input.dispatchKeyEvent", { type: "keyUp", key: "Enter", code: "Enter", windowsVirtualKeyCode: 13 });
+    assert.equal(await evaluate("document.getElementById('locked-documents-dialog').open"), true);
+    await send("Input.dispatchKeyEvent", { type: "keyDown", key: "Escape", code: "Escape", windowsVirtualKeyCode: 27 });
+    await send("Input.dispatchKeyEvent", { type: "keyUp", key: "Escape", code: "Escape", windowsVirtualKeyCode: 27 });
+    await waitFor("!document.getElementById('locked-documents-dialog').open");
+    assert.equal(await evaluate("document.activeElement.id"), "selected-documents");
     assert.equal(await evaluate("document.getElementById('document-categories').hidden"), true);
     await screenshot("desktop-actions-locked");
     await click("#open-evidence");
@@ -156,15 +187,25 @@ async function main() {
     await send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 1, mobile: false });
     await send("Page.reload");
     await waitFor("!!document.getElementById('archive-number') && !document.getElementById('access-view').hidden");
+    await delay(1100);
+    await screenshot("mobile-390-archive");
+    await send("Emulation.setDeviceMetricsOverride", { width: 360, height: 640, deviceScaleFactor: 1, mobile: false });
+    await screenshot("mobile-360-archive");
+    assert.equal(await evaluate("document.documentElement.scrollWidth <= innerWidth"), true);
+    const artwork = await evaluate("document.querySelector('.archive-visual').getBoundingClientRect().height");
+    assert(artwork >= 90 && artwork <= 120);
+    await send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 1, mobile: false });
     await click("#archive-number");
     await send("Input.insertText", { text: "0806" });
     await click("#submit-button");
     await waitFor("!document.getElementById('destination-view').hidden");
     await screenshot("mobile-heading");
-    assert.equal(await evaluate("document.getElementById('selected-documents').disabled"), true);
+    assert.equal(await evaluate("document.getElementById('selected-documents').disabled"), false);
+    assert.equal(await evaluate("document.getElementById('selected-documents').getAttribute('aria-disabled')"), "true");
     await click("#selected-documents");
     assert.equal(await evaluate("document.getElementById('document-categories').hidden"), true);
     await screenshot("mobile-actions-locked");
+    await click("#confirm-locked-documents");
     await click("#open-evidence");
     await key("Tab", "Tab");
     // The visible sound button follows the title in the focus order.

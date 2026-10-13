@@ -217,7 +217,7 @@
         <div class="suspect-actions">
           <div class="suspect-action-row">
           <button class="primary-button" id="open-evidence" type="button">بررسی شواهد</button>
-          <button class="document-control" id="selected-documents" type="button" disabled aria-disabled="true" data-state="locked" aria-expanded="false" aria-controls="document-categories">
+          <button class="document-control" id="selected-documents" type="button" aria-disabled="true" data-state="locked" aria-expanded="false" aria-controls="document-categories">
             <svg class="documents-lock" id="documents-lock" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8 10V7a4 4 0 0 1 8 0v3"/><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M12 14v3"/></svg>
             <span>مدارک منتخب کارآگاه</span>
           </button>
@@ -265,5 +265,9 @@
     </main>
 
   </div>
+  <dialog class="locked-documents-dialog" id="locked-documents-dialog" aria-labelledby="locked-documents-message">
+    <p id="locked-documents-message">این دکمه توسط کاراگاه در این مرحله قفل شده است.</p>
+    <button class="document-control" id="confirm-locked-documents" type="button" autofocus>تأیید</button>
+  </dialog>
 </body>
 </html>

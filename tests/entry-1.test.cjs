@@ -12,14 +12,14 @@ const html = fs.readFileSync(path.join(root, "public/entry-1/index.html"), "utf8
 const source = fs.readFileSync(path.join(root, "public/entry-1/script.js"), "utf8");
 const expected = [
   { key: "nora", title: "مدارک مرتبط با نورا آذرگشسب", documents: [
-    ["نامه انگشتنگاری و پزشکی قانونی", "nora-fingerprint-forensic-report.pdf"],
+    ["نامه انگشت‌نگاری و پزشکی قانونی", "nora-fingerprint-forensic-report.pdf"],
     ["گزارش تحقیقات محلی", "nora-local-inquiry-report.pdf"]
   ] },
   { key: "arash", title: "مدارک مرتبط با آرش نادری", documents: [
     ["استعلام مخابرات", "arash-telecom-record.pdf"]
   ] },
   { key: "kamran", title: "مدارک مرتبط با کامران فرهمند و باماخ", documents: [
-    ["استعلام مخابرات خط تلفن کامران", "kamran-telecom-record.pdf"],
+    ["استعلام مخابرات خط تلفن کامران فرهمند", "kamran-telecom-record.pdf"],
     ["گزارش بررسی تصویر دوربین مدار بسته", "cctv-footage-review-report.pdf"]
   ] }
 ];
@@ -42,6 +42,8 @@ function fixture({ unavailable = [], supportedAudio = true } = {}) {
     removeAttribute(key) { delete this.attributes[key]; }
     addEventListener(key, handler) { this.handlers[key] = handler; }
     focus() { focused = this.id; }
+    showModal() { this.open = true; }
+    close() { this.open = false; this.handlers.close?.(); }
     blur() { focused = undefined; }
     scrollIntoView() { scrolledTo = this.id; }
     append(...items) {
@@ -59,7 +61,7 @@ function fixture({ unavailable = [], supportedAudio = true } = {}) {
     const node = new Element(match[1]);
     node.hidden = /\bhidden\b/.test(match[0]);
     node.inert = /\binert\b/.test(match[0]);
-    node.disabled = /\bdisabled\b/.test(match[0]);
+    node.disabled = /\sdisabled(?:\s|>)/.test(match[0]);
     for (const attribute of match[0].matchAll(/([\w-]+)="([^"]*)"/g)) {
       node.attributes[attribute[1]] = attribute[2];
     }
@@ -120,21 +122,26 @@ test("documents are visible but locked until evidence return, remain unlocked, a
   f.unlock();
   assert.equal(f.get("destination-view").hidden, false);
   assert.equal(f.get("selected-documents").hidden, false);
-  assert.equal(f.get("selected-documents").disabled, true);
+  assert.equal(f.get("selected-documents").disabled, false);
   assert.equal(f.get("selected-documents").attributes["data-state"], "locked");
   assert.equal(f.get("documents-lock").attributes.hidden, undefined);
   assert.equal(f.get("selected-documents").attributes["aria-disabled"], "true");
   f.get("selected-documents").click();
   assert.equal(f.get("document-categories").hidden, true);
-  // Check the state guard independently of native disabled activation semantics.
+  assert.equal(f.get("locked-documents-dialog").open, true);
+  assert.equal(f.focused(), "confirm-locked-documents");
+  // Repeated locked activation cannot open document categories.
   f.get("selected-documents").handlers.click();
   f.categories[0].handlers.click();
   assert.equal(f.get("document-categories").hidden, true);
   assert.equal(f.get("category-view").hidden, true);
+  f.get("confirm-locked-documents").click();
+  assert.equal(f.get("locked-documents-dialog").open, false);
+  assert.equal(f.focused(), "selected-documents");
   f.window.scrollY = 1400;
   f.get("open-evidence").click();
   assert.equal(f.get("evidence-view").hidden, false);
-  assert.equal(f.get("selected-documents").disabled, true);
+  assert.equal(f.get("selected-documents").disabled, false);
   f.get("return-suspects").click();
   assert.equal(f.get("selected-documents").hidden, false);
   assert.equal(f.get("selected-documents").disabled, false);
@@ -154,7 +161,7 @@ test("documents are visible but locked until evidence return, remain unlocked, a
   const reloaded = fixture();
   reloaded.unlock();
   assert.equal(reloaded.get("selected-documents").hidden, false);
-  assert.equal(reloaded.get("selected-documents").disabled, true);
+  assert.equal(reloaded.get("selected-documents").disabled, false);
   assert.equal(reloaded.get("selected-documents").attributes["data-state"], "locked");
 });
 
@@ -371,7 +378,7 @@ test("dossiers and PDF bytes are preserved; controls have no obsolete placement 
   assert(actions.indexOf('id="open-evidence"') < actions.indexOf('id="selected-documents"'));
   assert(actions.includes('id="document-categories"'));
   const documentsTag = html.match(/<button[^>]*id="selected-documents"[^>]*>/)[0];
-  assert(/\bdisabled\b/.test(documentsTag));
+  assert(!/\sdisabled(?:\s|>)/.test(documentsTag));
   assert(!/\bhidden\b/.test(documentsTag));
   assert(!/documents-notice|jump-to-documents/.test(html + source));
   assert(!/documents-state|برای دسترسی به مدارک/.test(html + source));

@@ -67,6 +67,8 @@ archiveInput.addEventListener("input", () => {
 const internalViews = ["access-view", "destination-view", "evidence-view", "category-view", "pdf-view"];
 const evidenceButton = document.getElementById("open-evidence");
 const documentsButton = document.getElementById("selected-documents");
+const lockedDocumentsDialog = document.getElementById("locked-documents-dialog");
+const confirmLockedDocuments = document.getElementById("confirm-locked-documents");
 const categoryPanel = document.getElementById("document-categories");
 const pdfContainer = document.getElementById("pdf-container");
 const soundControl = document.getElementById("sound-control");
@@ -78,7 +80,6 @@ let categoryScrollPosition = 0;
 let categoryReturnFocus = "category-title";
 
 function renderDocumentsControl() {
-  documentsButton.disabled = !documentsUnlocked;
   documentsButton.setAttribute("aria-disabled", String(!documentsUnlocked));
   documentsButton.setAttribute("data-state", documentsUnlocked ? "unlocked" : "locked");
   const lockIcon = document.getElementById("documents-lock");
@@ -138,10 +139,20 @@ function returnToSuspects() {
 }
 
 documentsButton.addEventListener("click", () => {
-  if (!documentsUnlocked || document.getElementById("destination-view").hidden) return;
+  if (document.getElementById("destination-view").hidden) return;
+  if (!documentsUnlocked) {
+    if (!lockedDocumentsDialog.open) {
+      lockedDocumentsDialog.showModal();
+      confirmLockedDocuments.focus();
+    }
+    return;
+  }
   categoryPanel.hidden = !categoryPanel.hidden;
   renderDocumentsControl();
 });
+
+confirmLockedDocuments.addEventListener("click", () => lockedDocumentsDialog.close());
+lockedDocumentsDialog.addEventListener("close", () => documentsButton.focus({ preventScroll: true }));
 
 for (const button of categoryPanel.querySelectorAll("button")) {
   button.id = `category-${button.dataset.category}`;
