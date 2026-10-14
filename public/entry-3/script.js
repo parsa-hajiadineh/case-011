@@ -65,7 +65,7 @@ form.addEventListener("submit", (event) => {
   number.value = normalizeDigits(number.value);
   clearError();
   if (!/^[A-Z]$/.test(letter.value) || !/^\d{2}$/.test(number.value)) {
-    error.textContent = "شناسه مدرک را بهصورت یک حرف انگلیسی و دو رقم وارد کنید.";
+    error.textContent = "شناسه مدرک را به‌صورت یک حرف انگلیسی و دو رقم وارد کنید.";
     identifierField.setAttribute("aria-invalid", "true");
     const invalidField = /^[A-Z]$/.test(letter.value) ? number : letter;
     invalidField.setAttribute("aria-invalid", "true");
