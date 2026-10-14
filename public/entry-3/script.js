@@ -16,6 +16,8 @@ const backdrop = document.getElementById("warning-backdrop");
 const nativeDialog = typeof warning.showModal === "function";
 let retrieving = false;
 let recovered = false;
+let retrievalTimer;
+let warningTimer;
 
 function normalizeDigits(value) {
   return value.replace(/[۰-۹٠-٩]/g, (digit) => {
@@ -80,10 +82,10 @@ form.addEventListener("submit", (event) => {
   document.getElementById("record-area").setAttribute("aria-busy", "true");
   document.getElementById("record-idle").hidden = true;
   retrieval.hidden = false;
-  status.textContent = "در حال بازیابی مدرک";
+  status.textContent = "بازیابی مدارک";
   // Blur the field so the native keyboard can close before the recovered record.
   document.activeElement.blur();
-  window.setTimeout(() => {
+  retrievalTimer = window.setTimeout(() => {
     retrieving = false;
     recovered = true;
     retrieval.hidden = true;
@@ -94,8 +96,8 @@ form.addEventListener("submit", (event) => {
     record.scrollIntoView({ block: "nearest", behavior: "instant" });
     status.textContent = "Evidence B-11. Status: Recovered. Recovery Date: 2026. Case Reopened";
     status.setAttribute("lang", "en");
-    window.setTimeout(openWarning, 1500);
-  }, 800);
+    warningTimer = window.setTimeout(openWarning, 1500);
+  }, 5000);
 });
 
 detailsButton.addEventListener("click", () => {
@@ -192,7 +194,7 @@ soundToggle.addEventListener("click", () => {
   soundRequested = !soundRequested;
   soundRevision++;
   soundError.textContent = "";
-  if (soundRequested) resumeSound(soundRevision);
+  if (soundRequested) { evidenceAudio.pause(); resumeSound(soundRevision); }
   else {
     silence();
     renderSound(false);
@@ -209,3 +211,167 @@ window.addEventListener("pagehide", () => {
   if (audioContext) { silence(); void audioContext.suspend().catch(() => {}); }
 });
 window.addEventListener("pageshow", syncVisibility);
+
+
+const mediaDialog = document.getElementById("media-dialog");
+const evidenceAudio = document.getElementById("evidence-audio");
+const playRecording = document.getElementById("play-recording");
+const seek = document.getElementById("audio-seek");
+const mediaStatus = document.getElementById("media-status");
+const graphic = document.getElementById("playback-graphic");
+const audioPanel = document.getElementById("audio-panel");
+let mediaStarted = false;
+let mediaFailed = false;
+let mediaRevision = 0;
+let progressFrame;
+let lastProgress = 0;
+let lastMovement = 0;
+
+function stopAmbience() {
+  soundRequested = false;
+  soundRevision++;
+  silence();
+  renderSound(false);
+  if (audioContext) void audioContext.suspend().catch(() => {});
+}
+function formatTime(seconds) {
+  if (!Number.isFinite(seconds)) return "—";
+  return Math.floor(seconds / 60) + ":" + String(Math.floor(seconds % 60)).padStart(2, "0");
+}
+function renderMedia() {
+  const duration = evidenceAudio.duration;
+  const usable = !mediaFailed && evidenceAudio.readyState >= 2;
+  playRecording.disabled = !usable;
+  seek.disabled = !usable || !Number.isFinite(duration) || duration <= 0;
+  seek.max = Number.isFinite(duration) ? duration : 0;
+  seek.value = evidenceAudio.currentTime;
+  seek.setAttribute("aria-valuetext", formatTime(evidenceAudio.currentTime) + " / " + formatTime(duration));
+  document.getElementById("elapsed").textContent = formatTime(evidenceAudio.currentTime);
+  document.getElementById("duration").textContent = formatTime(duration);
+  playRecording.textContent = evidenceAudio.paused ? "▶" : "Ⅱ";
+  playRecording.setAttribute("aria-label", evidenceAudio.paused ? "پخش" : "توقف پخش");
+}
+function stopGraphic() {
+  cancelAnimationFrame(progressFrame);
+  graphic.classList.remove("is-playing");
+}
+function trackProgress(now) {
+  if (evidenceAudio.paused || evidenceAudio.ended || mediaFailed || !mediaDialog.open || document.hidden) { stopGraphic(); return; }
+  if (evidenceAudio.currentTime !== lastProgress) {
+    lastMovement = now;
+    lastProgress = evidenceAudio.currentTime;
+  }
+  graphic.classList.toggle("is-playing", evidenceAudio.readyState >= 3 && lastMovement > 0 && now - lastMovement < 350);
+  renderMedia();
+  progressFrame = requestAnimationFrame(trackProgress);
+}
+function attemptPlayback() {
+  stopAmbience();
+  const revision = ++mediaRevision;
+  // Invoke play directly from the user gesture, before awaiting any media event.
+  const attempt = evidenceAudio.play();
+  if (attempt) attempt.catch(() => {
+    if (revision !== mediaRevision || !mediaDialog.open || mediaFailed) return;
+    mediaStatus.textContent = "برای پخش فایل صوتی، دکمه پخش را فشار دهید.";
+    renderMedia();
+  });
+}
+function closeMedia() {
+  mediaRevision++;
+  evidenceAudio.pause();
+  stopGraphic();
+  if (nativeDialog) mediaDialog.close();
+  else { mediaDialog.removeAttribute("open"); backdrop.hidden = true; shell.inert = false; }
+  document.body.classList.remove("dialog-open");
+  document.getElementById("open-audio").focus({ preventScroll: true });
+}
+document.getElementById("open-audio").addEventListener("click", () => {
+  if (mediaDialog.open) return;
+  if (nativeDialog) mediaDialog.showModal();
+  else { mediaDialog.setAttribute("open", ""); mediaDialog.dataset.fallback = "true"; backdrop.hidden = false; shell.inert = true; }
+  document.body.classList.add("dialog-open");
+  document.getElementById("close-media").focus({ preventScroll: true });
+});
+document.getElementById("close-media").addEventListener("click", closeMedia);
+mediaDialog.addEventListener("cancel", (event) => { event.preventDefault(); closeMedia(); });
+mediaDialog.addEventListener("close", () => { evidenceAudio.pause(); stopGraphic(); document.body.classList.remove("dialog-open"); });
+document.getElementById("start-media").addEventListener("click", () => {
+  if (mediaStarted) return;
+  mediaStarted = true;
+  document.getElementById("audio-warning").hidden = true;
+  audioPanel.hidden = false;
+  mediaDialog.removeAttribute("aria-describedby");
+  document.getElementById("show-note").focus({ preventScroll: true });
+  attemptPlayback();
+});
+playRecording.addEventListener("click", () => {
+  if (evidenceAudio.paused) attemptPlayback();
+  else { mediaRevision++; evidenceAudio.pause(); }
+});
+seek.addEventListener("input", () => {
+  if (!seek.disabled) { evidenceAudio.currentTime = Number(seek.value); renderMedia(); }
+});
+for (const name of ["loadedmetadata", "durationchange", "timeupdate", "pause", "ended", "canplay", "seeked"]) {
+  evidenceAudio.addEventListener(name, () => {
+    if (name === "canplay") { mediaFailed = false; mediaStatus.textContent = ""; }
+    if (name === "pause" || name === "ended") stopGraphic();
+    renderMedia();
+  });
+}
+evidenceAudio.addEventListener("play", stopAmbience);
+evidenceAudio.addEventListener("playing", () => {
+  mediaStatus.textContent = "";
+  stopGraphic();
+  lastProgress = evidenceAudio.currentTime;
+  lastMovement = 0;
+  progressFrame = requestAnimationFrame(trackProgress);
+});
+for (const name of ["waiting", "stalled", "seeking"]) evidenceAudio.addEventListener(name, () => {
+  stopGraphic();
+  if (!evidenceAudio.paused) mediaStatus.textContent = "در حال بارگذاری فایل صوتی…";
+});
+evidenceAudio.addEventListener("error", () => {
+  mediaFailed = true;
+  mediaRevision++;
+  evidenceAudio.pause();
+  stopGraphic();
+  mediaStatus.textContent = "فایل صوتی در دسترس نیست.";
+  renderMedia();
+});
+document.getElementById("show-note").addEventListener("click", () => {
+  document.getElementById("investigator-note").hidden = false;
+  document.getElementById("show-note").setAttribute("aria-expanded", "true");
+  document.getElementById("note-title").focus({ preventScroll: true });
+  document.getElementById("investigator-note").scrollIntoView({ block: "nearest" });
+});
+document.getElementById("open-timeline").addEventListener("click", () => {
+  closeMedia();
+  const details = document.getElementById("details-view");
+  details.hidden = true;
+  details.inert = true;
+  const timeline = document.getElementById("timeline-view");
+  timeline.hidden = false;
+  timeline.inert = false;
+  window.scrollTo({ top: 0, behavior: "instant" });
+  document.getElementById("timeline-title").focus({ preventScroll: true });
+});
+// Keep keyboard focus within the dialog, including compatibility fallback browsers.
+document.addEventListener("keydown", (event) => {
+  if (!mediaDialog.open) return;
+  if (event.key === "Escape") { event.preventDefault(); closeMedia(); }
+  if (event.key !== "Tab") return;
+  const controls = [...mediaDialog.querySelectorAll("button, input")].filter((element) => !element.disabled && element.getClientRects().length);
+  const first = controls[0], last = controls[controls.length - 1];
+  if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+  else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+});
+document.addEventListener("focusin", () => {
+  if (!nativeDialog && mediaDialog.open && !mediaDialog.contains(document.activeElement)) document.getElementById("close-media").focus();
+});
+document.addEventListener("visibilitychange", () => { if (document.hidden) { evidenceAudio.pause(); stopGraphic(); } });
+window.addEventListener("pagehide", () => {
+  clearTimeout(retrievalTimer);
+  clearTimeout(warningTimer);
+  evidenceAudio.pause();
+  stopGraphic();
+});

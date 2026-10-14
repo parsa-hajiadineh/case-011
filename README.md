@@ -18,7 +18,7 @@ On mobile, entry 2 places a bounded output panel above the comparison controls. 
 
 After the warning transition and a two-second reading interval, entry 2 offers an internal original-record view. Its corrupted-file notification uses a 15-second elapsed-time game sequence with counter-rotating segmented rings, a core scan, phased nodes, and cyan intensity changes. Processing animations run only while the decoding view is visible and stop at completion. Reduced motion keeps geometry still and gently changes the whole emblem's intensity throughout the wait. Record navigation is forward only; pending callbacks are cancelled on page exit, and hidden views are inert. The decoded record contains only International Morse symbols generated from the ITU-R M.1677-1 alphabet. No media playback or actual file decoding is involved.
 
-Entry 3 is an independent case-archive portal at `/entry-3/`, with a charcoal, ivory, and copper identity. Its split Evidence ID field uppercases one Latin letter and normalizes two Persian, Arabic-Indic, or Latin digits while preserving leading zeros. Only `B-11` retrieves a record, after 800 ms; the warning opens 1500 ms later and advances to a minimal internal details view. Validation preserves entered values, successful retrieval prevents duplicate submissions, and the warning supports a focus-contained fallback on browsers without native modal dialogs. Optional original archival ambience uses one explicitly activated Web Audio context and suspends while hidden. Entry 4 remains an empty scaffold. QR codes and hosting are not implemented.
+Entry 3 is an independent case-archive portal at `/entry-3/`, with a charcoal, ivory, and copper identity. Its split Evidence ID field uppercases one Latin letter and normalizes two Persian, Arabic-Indic, or Latin digits while preserving leading zeros. Only `B-11` retrieves a record, after five seconds; the warning opens 1500 ms later and advances to an official evidence report and the provider’s statement. Validation preserves entered values, successful retrieval prevents duplicate submissions, and the warning supports a focus-contained fallback on browsers without native modal dialogs. Optional original archival ambience uses one explicitly activated Web Audio context and suspends while hidden. Entry 4 remains an empty scaffold. QR codes and hosting are not implemented.
 
 Entry 2 has an optional icon-only sound toggle beside its header case reference. It creates one Web Audio context only after explicit activation, using quiet filtered ventilation noise and instrument tones. Sound preference carries through internal views; hidden pages suspend audio, and returning resumes only an enabled preference. Failed activation leaves the control off with an accessible status message.
 
@@ -56,8 +56,12 @@ No dependencies or build step are required. Serve `public/` with a static HTTP s
 python -m http.server 8000 --directory public
 ```
 
-Open entry 1 at `http://localhost:8000/entry-1/` or entry 2 at `http://localhost:8000/entry-2/`. Entries 3-4 currently display blank pages. Entries 1 and 2 require JavaScript for their interactions; unsupported audio does not prevent archive access.
+Open entry 1 at `http://localhost:8000/entry-1/` or entry 2 at `http://localhost:8000/entry-2/`. Entry 3 is available at `http://localhost:8000/entry-3/`; entry 4 remains a blank scaffold. Entries 1, 2, and 3 require JavaScript for their interactions; unsupported audio does not prevent archive access.
 
 ## Deployment
 
 The static document root is `public/`. Hosting must serve each directory's `index.html` at its corresponding path without routing all entries to a shared page. Each future QR code should point to its entry's full deployed URL. No hosting provider or deployment workflow has been selected.
+
+## Entry 3 evidence recording
+
+The report opens an audio warning followed by a native media player. Place the supplied recording at `public/entry-3/assets/audio/B-11.mp3`; entry 3 loads `assets/audio/B-11.mp3`. No substitute recording is included. Missing or unreadable media disables playback and seeking while preserving access to the investigator note and the internal TIMELINE placeholder. Playback events and actual time progression drive the equalizer. Choosing media turns ambience off; enabling ambience pauses the recording. Closing the dialog pauses playback and preserves its position for the page session. The report uses normal page scrolling, while the dialog scrolls within the viewport when necessary.

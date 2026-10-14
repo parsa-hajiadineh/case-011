@@ -45,7 +45,7 @@
           <div class="record-idle" id="record-idle" aria-hidden="true">
             <svg viewBox="0 0 320 300" fill="none"><path class="record-grid" d="M40 30v240M80 30v240M120 30v240M160 30v240M200 30v240M240 30v240M280 30v240M30 60h260M30 100h260M30 140h260M30 180h260M30 220h260M30 260h260"/><path class="record-seal" d="M91 244V111a69 69 0 0 1 138 0v133M105 244V111a55 55 0 0 1 110 0v133M119 244V111a41 41 0 0 1 82 0v133M133 244V111a27 27 0 0 1 54 0v133M147 244V111a13 13 0 0 1 26 0v133M71 256h178"/><path class="record-registration" d="M16 42V16h26M278 16h26v26M16 258v26h26M278 284h26v-26"/></svg>
           </div>
-          <p id="retrieval-state" class="retrieval-state" hidden><span aria-hidden="true"></span>در حال بازیابی مدرک</p>
+          <p id="retrieval-state" class="retrieval-state" hidden><span aria-hidden="true"></span>بازیابی مدارک</p>
           <article id="recovered-record" class="recovered-record" dir="ltr" lang="en" aria-labelledby="record-title" hidden>
             <div class="record-topline" aria-hidden="true"><span>CASE ARCHIVE</span><svg viewBox="0 0 24 24" fill="none"><path d="m5 12 4 4 10-10"/></svg></div>
             <h2 id="record-title" tabindex="-1">Evidence B-11</h2>
@@ -56,8 +56,27 @@
         </div>
       </section>
       <section id="details-view" class="details-view" aria-labelledby="details-title" hidden inert>
-        <h1 id="details-title" tabindex="-1">جزئیات مدرک <bdi dir="ltr">B-11</bdi></h1>
+        <article class="evidence-report">
+          <div class="editorial-rule" aria-hidden="true"><span></span><i></i><i></i></div>
+          <h1 id="details-title" tabindex="-1">گزارش دریافت مدرک</h1>
+          <div class="report-metadata"><p>پرونده قتل النا راد  مختومه</p><p>مدت زمان از حادثه:  سال</p></div>
+          <div class="report-priority"><p>اهمیت مدرک: بالا</p><p>علت بازگشایی پرونده: وجود اطلاعات جدید درباره وقایع شب حادثه</p></div>
+          <div class="report-body">
+            <p>در جریان بررسی مجدد اطلاعات پرونده قتل النا راد مدرکی از سوی فردی ملقب به باماخ ارائه شده است. بنا بر اظهارات ارائهدهنده این مدرک به وقایع شب حادثه مربوط میشود و حاوی اطلاعاتی است که در زمان رسیدگی اولیه در اختیار پلیس قرار نگرفته بود.</p>
+            <p>پرونده پیشتر مختومه اعلام شده بود با این حال ارائه این مدرک و احتمال ارتباط محتوای آن با وقایع شب حادثه ضرورت بازگشایی پرونده و بررسی مجدد اطلاعات موجود را مطرح کرده است. اهمیت مدرک از آن جهت بالاست که ممکن است به روشن شدن بخشی از اتفاقاتی کمک کند که در اسناد اولیه پرونده بازتاب نیافتهاند.</p>
+            <p>این گزارش دریافت مدرک و توضیحات ارائهدهنده آن را ثبت میکند. اظهارات نقلشده در ادامه روایت ارائهدهنده مدرک است و باید در کنار سایر شواهد و اطلاعات پرونده بررسی شود. انتساب صدا و برداشت از محتوای فایل بهتنهایی به معنای اثبات مسئولیت کیفری هیچیک از افراد پرونده نیست.</p>
+          </div>
+          <p class="report-office">پلیس آگاهی  واحد بررسی پروندههای مختومه</p>
+        </article>
+        <section class="provider-statement" aria-labelledby="provider-title">
+          <h2 id="provider-title">توضیحات ارائهدهنده مدرک</h2>
+          <blockquote><p>من این فایل رو یازده سال نگه نداشتم اصلا فکر میکردم دیگه وجود نداره. اون موقع که پرونده بسته شد همهچیز تموم شده بود. منم ترجیح دادم چیزی نگم.</p>
+          <p>ولی چند وقت پیش وقتی داشتم فایلهای قدیمی گوشی رو منتقل میکردم پیداش کردم. اولش نمیخواستم حتی بازش کنم. بعد که فهمیدم چیه دیدم نمیتونم دوباره نادیده بگیرمش</p>
+          <p>صدای خودشه<br>صدای کامرانه مربوط به همون شبه</p></blockquote>
+          <button id="open-audio" class="details-button audio-entry" type="button" dir="ltr">Play_B-11_AUDIO</button>
+        </section>
       </section>
+      <section id="timeline-view" class="details-view" hidden inert aria-labelledby="timeline-title"><h1 id="timeline-title" tabindex="-1" dir="ltr">TIMELINE</h1></section>
     </main>
     <p id="archive-status" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true"></p>
   </div>
@@ -66,6 +85,20 @@
     <svg class="warning-mark" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m12 3 10 18H2zM12 9v5m0 3v.5"/></svg>
     <p id="warning-message">این مدرک در اسناد اولیه پرونده وجود نداشته است!</p>
     <div class="warning-footer"><p id="warning-source">منبع: باماخ</p><button id="view-details" class="details-button" type="button" autofocus>مشاهده جزئیات<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M19 12H5m6-6-6 6 6 6"/></svg></button></div>
+  </dialog>
+  <dialog id="media-dialog" class="archive-warning media-dialog" role="dialog" aria-modal="true" aria-labelledby="media-title" aria-describedby="media-message">
+    <button id="close-media" class="dialog-close" type="button" aria-label="بستن">×</button>
+    <h2 id="media-title">B-11</h2>
+    <div id="audio-warning"><p id="media-message">توجه: فایل صوتی کامل نیست بخشهایی از فایل آسیب دیده است.<br>تنها بخشهای قابل بازیابی دقیقا مربوط به پس از حادثه است.</p><button id="start-media" class="details-button" type="button">پخش رسانه</button></div>
+    <section id="audio-panel" hidden aria-label="پخش فایل صوتی مدرک">
+      <audio id="evidence-audio" preload="none" src="assets/audio/B-11.mp3"></audio>
+      <div id="playback-graphic" class="equalizer" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <p id="media-status" class="media-status" role="status">در حال بارگذاری فایل صوتی…</p>
+      <div class="playback-controls" dir="ltr"><button id="play-recording" class="details-button" type="button" disabled aria-label="پخش">▶</button><span id="elapsed">0:00</span><span aria-hidden="true">/</span><span id="duration">—</span></div>
+      <input id="audio-seek" class="audio-seek" type="range" min="0" max="0" step="0.1" value="0" disabled aria-label="موقعیت پخش" dir="ltr">
+      <button id="show-note" class="details-button note-button" type="button" aria-expanded="false" aria-controls="investigator-note">یادداشت بازپرس</button>
+      <section id="investigator-note" class="investigator-note" hidden aria-labelledby="note-title"><h3 id="note-title" tabindex="-1">یادداشت بازپرس</h3><p>باماخ در بازجویی اولیه اظهار کرده بود که صرفا برای برگرداندن کامران به مجتمع مراجعه کرده است. درباره علت تماس کامران و وضعیت او هنگام خروج توضیح بیشتری ارائه نشد. اظهارات وی در پرونده ثبت شد و موضوع مختومه اعلام گردید.</p><button id="open-timeline" class="details-button" type="button" dir="ltr">timeline</button></section>
+    </section>
   </dialog>
 </body>
 </html>
