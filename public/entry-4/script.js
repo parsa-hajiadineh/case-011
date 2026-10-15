@@ -1,7 +1,7 @@
 import { entry4Config } from './config.js';
 
 const workspace = document.getElementById('workspace');
-const progress = Array(7).fill(0);
+const progress = new Map(entry4Config.hintSections.map(({ id }) => [id, 0]));
 const testNames = ['بررسی اول', 'بررسی دوم', 'بررسی سوم'];
 let currentTest = -1;
 let accessGranted = false;
@@ -249,31 +249,33 @@ function showIndex() {
   header.lastElementChild.dir = 'ltr';
   panel.append(header);
   const list = element('ol', 'evidence-list');
-  for (let index = 0; index < 7; index++) {
+  for (const section of entry4Config.hintSections) {
     const item = element('li');
     const open = button('', 'evidence-open');
-    const number = element('span', 'document-number', String(index + 1).padStart(2, '0'));
+    const number = element('span', 'document-number', section.id === 'chest-code' ? '' : section.id.slice(-2));
     number.setAttribute('aria-hidden', 'true');
-    const name = element('span', 'evidence-name', `Evidence ${index + 1}`);
+    const name = element('span', 'evidence-name', section.title);
     name.dir = 'ltr';
     name.lang = 'en';
     const arrow = element('span', 'evidence-arrow', '←');
     arrow.setAttribute('aria-hidden', 'true');
     open.append(number, name, arrow);
-    open.addEventListener('click', () => showEvidence(index));
+    open.dataset.sectionId = section.id;
+    open.addEventListener('click', () => showEvidence(section.id));
     item.append(open);
     list.append(item);
   }
   panel.append(list);
   mount(view, title);
 }
-function showEvidence(index) {
-  if (!accessGranted || index < 0 || index > 6) return;
+function showEvidence(id) {
+  const section = entry4Config.hintSections.find((item) => item.id === id);
+  if (!accessGranted || !section) return;
   const { view, panel } = createView();
   const back = button('بازگشت به فهرست مراحل', 'return-button');
   back.addEventListener('click', showIndex);
   view.prepend(back);
-  const title = element('h1', 'evidence-name', `Evidence ${index + 1}`);
+  const title = element('h1', 'evidence-name', section.title);
   title.dir = 'ltr';
   title.lang = 'en';
   title.style.textAlign = 'right';
@@ -281,27 +283,36 @@ function showEvidence(index) {
   const notes = element('ol', 'note-stack');
   const actions = element('div', 'note-actions');
   const reveal = button('نمایش یادداشت اول');
-  const content = entry4Config.evidenceNotes?.[index];
+  const content = section.hints;
   const appendNote = (noteIndex, animate) => {
     const note = element('li', 'note');
     note.dataset.number = String(noteIndex + 1).padStart(2, '0');
     if (!animate) note.style.animation = 'none';
-    note.append(element('p', '', content[noteIndex]));
+    const paragraph = element('p');
+    // Isolate Latin identifiers without changing the exact authored text.
+    content[noteIndex].split(/(Evidence ID|E-06|B-11|UV)/g).forEach((part) => {
+      if (/^(Evidence ID|E-06|B-11|UV)$/.test(part)) {
+        const isolated = element('bdi', '', part);
+        isolated.dir = 'ltr';
+        paragraph.append(isolated);
+      } else paragraph.append(document.createTextNode(part));
+    });
+    note.append(paragraph);
     notes.append(note);
     return note;
   };
-  for (let noteIndex = 0; noteIndex < progress[index]; noteIndex++) appendNote(noteIndex, false);
+  for (let noteIndex = 0; noteIndex < progress.get(id); noteIndex++) appendNote(noteIndex, false);
   function updateControl() {
-    if (progress[index] === 3) { reveal.remove(); return; }
-    const ready = hasText(content?.[progress[index]]);
-    reveal.textContent = progress[index] === 0 ? 'نمایش یادداشت اول' : 'نمایش یادداشت بعدی';
+    if (progress.get(id) === 3) { reveal.remove(); return; }
+    const ready = hasText(content?.[progress.get(id)]);
+    reveal.textContent = progress.get(id) === 0 ? 'نمایش یادداشت اول' : 'نمایش یادداشت بعدی';
     reveal.disabled = !ready;
   }
   reveal.addEventListener('click', () => {
-    const next = progress[index];
+    const next = progress.get(id);
     if (next >= 3 || !hasText(content?.[next])) return;
     const note = appendNote(next, true);
-    progress[index]++;
+    progress.set(id, progress.get(id) + 1);
     updateControl();
     focusHeading(note);
     note.scrollIntoView({ block: 'nearest', behavior: 'auto' });

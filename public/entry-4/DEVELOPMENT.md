@@ -24,7 +24,7 @@ entrance and selection transitions. All views retain normal document scrolling.
 
 Edit `config.js` in this directory. `entry4Config.imageTests[0]` and `[1]` contain
 each test's `question`, `options`, and `correctOption`. The supplied testing setup
-explicitly makes option 1 correct in both tests. `correctOption` is one-based
+uses option 1 for the first test and option 3 for the second test. `correctOption` is one-based
 (1–3) and follows DOM order: right to left on desktop and top to bottom on mobile.
 These are temporary answer mappings, not a bypass of the sequential tests.
 
@@ -45,13 +45,13 @@ confirmation button; selecting alone never submits. A genuinely unavailable imag
 retains a restrained fallback and cannot be selected. No content classification or
 final-content approval is required for the installed images to work.
 
-`provisionalNotes` contains the three user-supplied neutral testing notes. Editing
-it updates the starting copy for all seven stages. These are not final story clues.
-`entry4Config.evidenceNotes` creates seven separate arrays in Evidence 1–7 order.
-For future stage-specific copy, replace its initializer with seven arrays of three
-strings; indexes `[stageIndex][noteIndex]` are zero-based. Paragraph breaks inside
-a note are preserved. Reopening a stage preserves its own note count in memory
-for the current page session only. No unfinished-content notices are shown.
+`entry4Config.hintSections` holds the seven ordered sections, each with a stable
+`id`, display `title`, and exactly three final `hints`. Chest Code follows Evidence
+04 and belongs to its second lock; Evidence 05 covers Morse and Evidence 06 UV.
+Reveal progress is keyed by section ID in memory for the current page session.
+The authored copy intentionally retains supplied blank number slots; do not infer
+missing subtraction operands or codes. Latin identifiers use LTR `bdi` elements
+while preserving the exact paragraph text and whitespace.
 
 ## Local verification
 
@@ -66,4 +66,10 @@ Browser verification should cover native radio keyboard behavior and explicit
 confirmation, disabled confirmation before selection, wrong answers, exact arithmetic
 mapping, digit normalization including zero, all seven independent note counts,
 return navigation, small screens, keyboard viewport resizing, and reduced motion.
-Distinguish the authorized provisional copy from final story-specific content.
+The final copy is centralized in config.js.
+
+Run `node tests/entry-4.browser.cjs` with the repository's `public/` directory
+served on localhost:8000 and an isolated Chromium debugging session on port 9223.
+It checks exact copy, access answers, navigation, interleaved independent reveal
+progress, reload reset, RTL isolation, and overflow using mouse and touch input.
+Screenshots and results go to `.local-verification/entry-4/final-hints/`.
