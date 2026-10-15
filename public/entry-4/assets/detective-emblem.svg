@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" fill="none">
+  <!-- An open document corner frames a six-leaf aperture and a focused center. -->
+  <g stroke="#b9bdc3" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M48 7h12l13 13v35M60 7v13h13M12 68h25M12 74h14"/>
+    <path d="m35 14 22 13v26L35 66 13 53V27Z"/>
+    <path d="m35 14 10 20m12-7-12 19m12 7-22-1m0 14L25 46M13 53l12-19M13 27l22 1"/>
+  </g>
+  <path d="m35 28 10 6v12l-10 6-10-6V34Z" stroke="#b5a17b" stroke-width="1.7" stroke-linejoin="round"/>
+  <circle cx="35" cy="40" r="2" fill="#b5a17b"/>
+</svg>

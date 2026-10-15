@@ -5,6 +5,19 @@ JavaScript modules load. No packages, backend, audio, storage, or cross-entry
 navigation are used. The sequential tests are a client-side game mechanic, not
 authentication. Reloading resets access and all note progress.
 
+## Visual system
+
+`styles.css` owns the charcoal, graphite, pearl, silver, and restrained antique-gold
+palette. The original vector emblem lives at `assets/detective-emblem.svg` and is
+reused in the compact header and decorative introduction. It has no interaction.
+
+Image choices keep their native radio inputs and existing DOM order. The radio
+sits beside the caption below the image. Desktop uses equal image stages with
+`object-fit: contain`; phones use full-width images at their natural aspect ratio.
+No game images, configuration, copy, event handlers, or timing are altered by the
+visual redesign. Hover styles require a fine pointer; reduced motion removes
+entrance and selection transitions. All views retain normal document scrolling.
+
 ## Editable testing content
 
 Edit `config.js` in this directory. `entry4Config.imageTests[0]` and `[1]` contain
