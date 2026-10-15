@@ -90,7 +90,7 @@ async function main() {
       assert.equal(await read("document.documentElement.scrollWidth>innerWidth"),false);
       await screenshot(name+"-initial");
       if (name === "desktop") {
-        const invalid = "شناسه مدرک را بهصورت یک حرف انگلیسی و دو رقم وارد کنید.";
+        const invalid = "شناسه مدرک را به‌صورت یک حرف انگلیسی و دو رقم وارد کنید.";
         await click("#search-button");
         assert.equal(await read("document.getElementById('search-error').textContent"),invalid);
         await fill("#evidence-letter","a");
@@ -175,7 +175,7 @@ async function main() {
       assert.equal(await read("document.getElementById('search-view').hidden && document.getElementById('search-view').inert"),true);
       assert.equal(await read("document.getElementById('details-title').textContent"),"گزارش دریافت مدرک");
       assert.equal(await read("document.activeElement.id"),"details-title");
-      assert.equal(await read("document.getElementById('provider-title').textContent"),"توضیحات ارائهدهنده مدرک");
+      assert.equal(await read("document.getElementById('provider-title').textContent"),"توضیحات ارائه‌دهنده مدرک");
       assert.equal(await read("observedContexts.length"),1);
       assert.equal(await read("observedContexts[0].state"),"running");
       await delay(550);
@@ -214,7 +214,11 @@ async function main() {
       await click("#open-timeline");
       assert.equal(await read("document.getElementById('media-dialog').open"),false);
       assert.equal(await read("document.getElementById('evidence-audio').paused"),true);
-      assert.equal(await read("document.getElementById('timeline-title').textContent"),"TIMELINE");
+      assert.equal(await read("document.getElementById('timeline-title').textContent"),"مدرک B-11 ثابت میکند که پس از حادثه کامران با باماخ تماس گرفته است اما هنوز مشخص نیست حادثه دقیقا چه زمانی رخ داده و کامران در فاصله : تا : چه کرده است");
+      assert.equal(await read("document.querySelector('.timeline-question').textContent"),"پرونده هنوز کامل نیست و یک سؤال دیگر باقی مانده است: اگر کامران فقط برای صحبت با النا آمده بود چرا  دقیقه پس از شکستن ساعت از منزل او خارج شده بود");
+      assert.equal(await read("document.querySelector('.timeline-task').textContent"),"برای پاسخ باید دقایق گمشده پرونده را بازسازی کنید.");
+      assert.deepEqual(await read("[...document.querySelectorAll('.timeline-reference > *')].map(e=>e.textContent)"),["Evidence 7","دسترسی فیزیکی به مدارک نیاز است"]);
+      assert.equal(await read("document.querySelectorAll('#timeline-view button,#timeline-view a').length"),0);
       assert.equal(await read("document.activeElement.id"),"timeline-title");
       await screenshot(name+"-timeline");
       console.log(`PASS ${name}: real ${touch?'touch':'mouse/keyboard'} input, exact result, retrieval ${resultTime-start}ms / warning ${warningTime-resultTime}ms, bounded modal, details/focus, one audio context.`);

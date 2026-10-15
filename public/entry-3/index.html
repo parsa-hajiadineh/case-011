@@ -76,7 +76,16 @@
           <button id="open-audio" class="details-button audio-entry" type="button" dir="ltr">Play_B-11_AUDIO</button>
         </section>
       </section>
-      <section id="timeline-view" class="details-view" hidden inert aria-labelledby="timeline-title"><h1 id="timeline-title" tabindex="-1" dir="ltr">TIMELINE</h1></section>
+      <section id="timeline-view" class="details-view timeline-view" hidden inert aria-labelledby="timeline-title">
+        <div class="editorial-rule" aria-hidden="true"><span></span><i></i><i></i></div>
+        <p id="timeline-title" class="timeline-finding" tabindex="-1">مدرک <bdi dir="ltr">B-11</bdi> ثابت میکند که پس از حادثه کامران فرهمند با باماخ تماس گرفته است اما هنوز مشخص نیست حادثه دقیقا چه زمانی رخ داده و کامران در فاصله <span class="timeline-range"><bdi dir="ltr">23:11</bdi> تا <bdi dir="ltr">23:17</bdi></span> چه کرده است.</p>
+        <p class="timeline-question">پرونده هنوز کامل نیست و یک سؤال دیگر باقی مانده است: <strong>اگر کامران فقط برای صحبت با النا آمده بود چرا 6 دقیقه پس از شکستن ساعت از منزل او خارج شده بود؟</strong></p>
+        <p class="timeline-task">برای پاسخ باید دقایق گمشده پرونده را بازسازی کنید.</p>
+        <aside class="timeline-reference" aria-labelledby="timeline-reference-title">
+          <h2 id="timeline-reference-title" dir="ltr" lang="en">Evidence 7</h2>
+          <p>دسترسی فیزیکی به مدارک نیاز است...</p>
+        </aside>
+      </section>
     </main>
     <p id="archive-status" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true"></p>
   </div>
@@ -89,7 +98,7 @@
   <dialog id="media-dialog" class="archive-warning media-dialog" role="dialog" aria-modal="true" aria-labelledby="media-title" aria-describedby="media-message">
     <button id="close-media" class="dialog-close" type="button" aria-label="بستن">×</button>
     <h2 id="media-title">B-11</h2>
-    <div id="audio-warning"><p id="media-message">توجه: فایل صوتی کامل نیست بخش‌هایی از فایل آسیب دیده است.<br>تنها بخشهای قابل بازیابی دقیقا مربوط به پس از حادثه است.</p><button id="start-media" class="details-button" type="button">پخش رسانه</button></div>
+    <div id="audio-warning"><p id="media-message">توجه: فایل صوتی کامل نیست بخش‌هایی از فایل آسیب دیده است.<br>تنها بخش‌های قابل بازیابی دقیقا مربوط به پس از حادثه است.</p><button id="start-media" class="details-button" type="button">پخش رسانه</button></div>
     <section id="audio-panel" hidden aria-label="پخش فایل صوتی مدرک">
       <audio id="evidence-audio" preload="none" src="assets/audio/B-11.mp3"></audio>
       <div id="playback-graphic" class="equalizer" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
@@ -97,7 +106,7 @@
       <div class="playback-controls" dir="ltr"><button id="play-recording" class="details-button" type="button" disabled aria-label="پخش">▶</button><span id="elapsed">0:00</span><span aria-hidden="true">/</span><span id="duration">—</span></div>
       <input id="audio-seek" class="audio-seek" type="range" min="0" max="0" step="0.1" value="0" disabled aria-label="موقعیت پخش" dir="ltr">
       <button id="show-note" class="details-button note-button" type="button" aria-expanded="false" aria-controls="investigator-note">یادداشت بازپرس</button>
-      <section id="investigator-note" class="investigator-note" hidden aria-labelledby="note-title"><h3 id="note-title" tabindex="-1">یادداشت بازپرس</h3><p>باماخ در بازجویی اولیه اظهار کرده بود که صرفا برای برگرداندن کامران فرهمند به مجتمع مراجعه کرده است. درباره علت تماس کامران و وضعیت او هنگام خروج توضیح بیشتری ارائه نشد. اظهارات وی در پرونده ثبت شد و موضوع مختومه اعلام گردید.</p><button id="open-timeline" class="details-button" type="button" dir="ltr">timeline</button></section>
+      <section id="investigator-note" class="investigator-note" hidden aria-labelledby="note-title"><h3 id="note-title" tabindex="-1">یادداشت بازپرس</h3><p>باماخ در بازجویی اولیه اظهار کرده بود که صرفا برای برگرداندن کامران فرهمند به مجتمع مراجعه کرده است. درباره علت تماس کامران و وضعیت او هنگام خروج توضیح بیشتری ارائه نشد. اظهارات وی در پرونده ثبت شد و موضوع مختومه اعلام گردید.</p><button id="open-timeline" class="details-button" type="button" dir="ltr">Timeline</button></section>
     </section>
   </dialog>
 </body>
