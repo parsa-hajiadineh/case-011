@@ -5,16 +5,16 @@ JavaScript modules load. No packages, backend, audio, storage, or cross-entry
 navigation are used. The sequential tests are a client-side game mechanic, not
 authentication. Reloading resets access and all note progress.
 
-## Required authored content
+## Editable testing content
 
-Edit `config.js` in this directory. Both `imageTests` need a question, accessible
-labels for all three options, and `correctOption` set to the supplied one-based
-option number (1–3). Null is intentionally unconfigured: no answer is assumed.
-The three images must also finish loading successfully before a test accepts
-submissions. A missing or unreadable image displays a neutral placeholder and
-blocks that test. Labels should describe the image without revealing its answer.
+Edit `config.js` in this directory. `entry4Config.imageTests[0]` and `[1]` contain
+each test's `question`, `options`, and `correctOption`. The supplied testing setup
+explicitly makes option 1 correct in both tests. `correctOption` is one-based
+(1–3) and follows DOM order: right to left on desktop and top to bottom on mobile.
+These are temporary answer mappings, not a bypass of the sequential tests.
 
-Populate these actual game assets; do not replace them with unrelated images:
+All six installed images are usable game assets, including their current temporary
+content. Replace their files later without changing these paths or the logic:
 
 ```text
 assets/tests/test-1-option-1.png
@@ -25,24 +25,30 @@ assets/tests/test-2-option-2.png
 assets/tests/test-2-option-3.png
 ```
 
-`evidenceNotes` has exactly seven rows in Evidence 1–7 order, with exactly three
-notes per row in reveal order. Replace the 21 null values with supplied Persian
-strings. Paragraph breaks inside a note are preserved. An absent next note cannot
-increment progress; later notes cannot be revealed out of order. Reopening a stage
-preserves its own note count in memory for the current page session only.
+Each loaded image is selectable by native radio input. Selection enables the
+confirmation button; selecting alone never submits. A genuinely unavailable image
+retains a restrained fallback and cannot be selected. No content classification or
+final-content approval is required for the installed images to work.
+
+`provisionalNotes` contains the three user-supplied neutral testing notes. Editing
+it updates the starting copy for all seven stages. These are not final story clues.
+`entry4Config.evidenceNotes` creates seven separate arrays in Evidence 1–7 order.
+For future stage-specific copy, replace its initializer with seven arrays of three
+strings; indexes `[stageIndex][noteIndex]` are zero-based. Paragraph breaks inside
+a note are preserved. Reopening a stage preserves its own note count in memory
+for the current page session only. No unfinished-content notices are shown.
 
 ## Local verification
 
-Keep fixtures, screenshots, result logs, and temporary browser scripts under the
-repository's ignored `.local-verification/` directory. Verify the unconfigured
-production page first. Downstream tests may intercept `config.js` and image
-requests in an isolated browser, supplying clearly synthetic fixture content.
-Never change the production null values or add a player-facing bypass to test
-downstream views. The mathematical answer is intentionally part of the client
+Keep screenshots, result logs, and temporary browser scripts under the repository's
+ignored `.local-verification/` directory. Verify the actual served configuration
+and installed images with native mouse, keyboard, and touch input. Do not inject
+state, call internal handlers, intercept configuration, or skip tests to claim
+end-to-end success. The mathematical answer is intentionally part of the client
 code, but it is never printed in the player interface.
 
 Browser verification should cover native radio keyboard behavior and explicit
-confirmation, wrong and empty submissions, missing images, exact arithmetic
+confirmation, disabled confirmation before selection, wrong answers, exact arithmetic
 mapping, digit normalization including zero, all seven independent note counts,
 return navigation, small screens, keyboard viewport resizing, and reduced motion.
-Do not claim the authored image tests or notes are complete until supplied.
+Distinguish the authorized provisional copy from final story-specific content.

@@ -55,19 +55,13 @@ function status(className = 'form-message') {
   node.setAttribute('aria-live', 'polite');
   return node;
 }
-function configurationComplete(test) {
-  return test && hasText(test.question) && Array.isArray(test.options) &&
-    test.options.length === 3 && test.options.every((option) => hasText(option.image) && hasText(option.label)) &&
-    Number.isInteger(test.correctOption) && test.correctOption >= 1 && test.correctOption <= 3;
-}
 function showImageTest(index) {
   if (index !== currentTest || index > 1 || accessGranted) return;
   const test = entry4Config.imageTests?.[index];
-  const configured = configurationComplete(test);
   const loaded = [false, false, false];
   const { view, panel } = createView(index);
   panel.append(element('p', 'test-number', testNames[index]));
-  const title = element('h1', '', hasText(test?.question) ? test.question : 'اطلاعات این بررسی هنوز تکمیل نشده است.');
+  const title = element('h1', '', test.question);
   title.id = 'test-title';
   view.setAttribute('aria-labelledby', title.id);
   panel.append(title);
@@ -81,14 +75,12 @@ function showImageTest(index) {
   submit.disabled = true;
   const message = status();
   message.id = 'image-message';
-  const availability = status('configuration-status');
-  availability.textContent = configured ? 'در حال بررسی تصاویر…' : 'این بررسی هنوز آماده نیست.';
-  const refreshAvailability = () => {
-    const ready = configured && loaded.every(Boolean);
-    submit.disabled = !ready;
-    radios.forEach((radio) => { radio.disabled = !ready; });
-    availability.textContent = ready ? '' : 'این بررسی هنوز آماده نیست.';
-    availability.hidden = ready;
+  const refreshSelection = () => {
+    radios.forEach((radio, optionIndex) => {
+      radio.disabled = !loaded[optionIndex];
+      if (radio.disabled) radio.checked = false;
+    });
+    submit.disabled = !radios.some((radio) => radio.checked && !radio.disabled);
   };
   for (let optionIndex = 0; optionIndex < 3; optionIndex++) {
     const option = test?.options?.[optionIndex];
@@ -100,9 +92,14 @@ function showImageTest(index) {
     radio.disabled = true;
     radio.setAttribute('aria-describedby', message.id);
     radios.push(radio);
+    radio.addEventListener('change', () => {
+      message.textContent = '';
+      refreshSelection();
+    });
     const card = element('span', 'choice-card');
     const frame = element('span', 'choice-image');
     const fallback = element('span', 'image-placeholder', 'تصویر در دسترس نیست');
+    fallback.hidden = true;
     fallback.setAttribute('aria-hidden', 'true');
     frame.append(fallback);
     if (hasText(option?.image)) {
@@ -113,13 +110,13 @@ function showImageTest(index) {
         loaded[optionIndex] = image.naturalWidth > 0;
         image.hidden = !loaded[optionIndex];
         fallback.hidden = loaded[optionIndex];
-        refreshAvailability();
+        refreshSelection();
       });
       image.addEventListener('error', () => {
         loaded[optionIndex] = false;
         image.hidden = true;
         fallback.hidden = false;
-        refreshAvailability();
+        refreshSelection();
       });
       image.src = option.image;
       frame.append(image);
@@ -131,12 +128,12 @@ function showImageTest(index) {
   fieldset.append(choices);
   const footer = element('div', 'form-footer');
   footer.append(message, submit);
-  form.append(fieldset, availability, footer);
+  form.append(fieldset, footer);
   panel.append(form);
   form.addEventListener('submit', (event) => {
     event.preventDefault();
-    if (index !== currentTest || !configured || !loaded.every(Boolean) || transitionPending) return;
-    const selected = radios.find((radio) => radio.checked);
+    if (index !== currentTest || transitionPending) return;
+    const selected = radios.find((radio) => radio.checked && !radio.disabled);
     if (!selected) { message.textContent = 'ابتدا یک تصویر انتخاب کنید.'; return; }
     if (Number(selected.value) !== test.correctOption) {
       message.textContent = 'پاسخ درست نیست. دوباره بررسی کنید.';
@@ -283,7 +280,6 @@ function showEvidence(index) {
   panel.append(title);
   const notes = element('ol', 'note-stack');
   const actions = element('div', 'note-actions');
-  const message = status('configuration-status');
   const reveal = button('نمایش یادداشت اول');
   const content = entry4Config.evidenceNotes?.[index];
   const appendNote = (noteIndex, animate) => {
@@ -296,12 +292,10 @@ function showEvidence(index) {
   };
   for (let noteIndex = 0; noteIndex < progress[index]; noteIndex++) appendNote(noteIndex, false);
   function updateControl() {
-    if (progress[index] === 3) { reveal.remove(); message.remove(); return; }
+    if (progress[index] === 3) { reveal.remove(); return; }
     const ready = hasText(content?.[progress[index]]);
     reveal.textContent = progress[index] === 0 ? 'نمایش یادداشت اول' : 'نمایش یادداشت بعدی';
     reveal.disabled = !ready;
-    message.textContent = ready ? '' : 'متن این یادداشت هنوز در دسترس نیست.';
-    message.hidden = ready;
   }
   reveal.addEventListener('click', () => {
     const next = progress[index];
@@ -312,7 +306,7 @@ function showEvidence(index) {
     focusHeading(note);
     note.scrollIntoView({ block: 'nearest', behavior: 'auto' });
   });
-  actions.append(message, reveal);
+  actions.append(reveal);
   panel.append(notes, actions);
   updateControl();
   mount(view, title);
