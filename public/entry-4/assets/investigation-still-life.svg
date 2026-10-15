@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 400" fill="none">
+  <!-- Original editorial still life. All photographic and annotation details are abstract. -->
+  <defs>
+    <linearGradient id="cover" x1="100" y1="130" x2="390" y2="350" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#363b40"/><stop offset="1" stop-color="#1b1e22"/>
+    </linearGradient>
+    <linearGradient id="leftPaper" x1="109" y1="129" x2="263" y2="297" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#aaaead"/><stop offset=".65" stop-color="#848a89"/><stop offset="1" stop-color="#5b6262"/>
+    </linearGradient>
+    <linearGradient id="rightPaper" x1="239" y1="200" x2="401" y2="215" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#454b4d"/><stop offset=".12" stop-color="#8d9391"/><stop offset=".34" stop-color="#a1a6a2"/><stop offset="1" stop-color="#7e8683"/>
+    </linearGradient>
+    <linearGradient id="printBorder" x1="0" y1="0" x2="150" y2="170" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#a0a5a3"/><stop offset="1" stop-color="#616968"/>
+    </linearGradient>
+    <linearGradient id="photo" x1="0" y1="0" x2="130" y2="130" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#555d61"/><stop offset=".55" stop-color="#30373c"/><stop offset="1" stop-color="#1b2025"/>
+    </linearGradient>
+    <linearGradient id="metal" x1="0" y1="0" x2="11" y2="0" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#41484f"/><stop offset=".25" stop-color="#9ca6ac"/><stop offset=".44" stop-color="#d0d3d2"/><stop offset=".62" stop-color="#818b92"/><stop offset="1" stop-color="#30383f"/>
+    </linearGradient>
+    <filter id="groundShadow" x="-40%" y="-80%" width="180%" height="260%"><feGaussianBlur stdDeviation="14"/></filter>
+    <filter id="objectShadow" x="-30%" y="-30%" width="170%" height="170%"><feDropShadow dx="6" dy="12" stdDeviation="7" flood-color="#000" flood-opacity=".48"/></filter>
+    <filter id="printShadow" x="-25%" y="-25%" width="160%" height="170%"><feDropShadow dx="3" dy="6" stdDeviation="3" flood-color="#080b0d" flood-opacity=".55"/></filter>
+    <filter id="defocus"><feGaussianBlur stdDeviation="6"/></filter>
+    <filter id="paperGrain" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency=".8" numOctaves="3" seed="11"/>
+      <feColorMatrix type="saturate" values="0"/>
+      <feComponentTransfer><feFuncA type="linear" slope=".075"/></feComponentTransfer>
+      <feBlend in="SourceGraphic" mode="soft-light"/>
+    </filter>
+    <clipPath id="backPhoto"><rect x="10" y="10" width="125" height="107"/></clipPath>
+    <clipPath id="frontPhoto"><rect x="9" y="9" width="124" height="103"/></clipPath>
+  </defs>
+
+  <!-- Soft shadows fall away from the upper-left light source. -->
+  <ellipse cx="269" cy="312" rx="176" ry="33" fill="#000" opacity=".56" filter="url(#groundShadow)"/>
+  <g transform="translate(84 74) rotate(-17 73 70)" filter="url(#printShadow)">
+    <rect width="145" height="143" rx="1" fill="url(#printBorder)"/>
+    <g clip-path="url(#backPhoto)">
+      <rect x="10" y="10" width="125" height="107" fill="url(#photo)"/>
+      <g filter="url(#defocus)" opacity=".7">
+        <path d="M-6 90 88-12h22L20 122Z" fill="#899091"/>
+        <path d="m80 16 66 30-18 52-75-19Z" fill="#252d32"/>
+        <path d="m105 6 18 112" stroke="#b0b4ac" stroke-width="10" opacity=".35"/>
+      </g>
+    </g>
+    <path d="M12 131h18" stroke="#424b4d" stroke-width=".8"/>
+    <path d="M.5.5h144v142H.5Z" stroke="#c0c5c0" stroke-opacity=".22"/>
+  </g>
+  <g transform="translate(239 58) rotate(9 66 74)" filter="url(#printShadow)">
+    <rect width="139" height="151" rx="1" fill="#727a7a"/>
+    <rect x="9" y="9" width="121" height="116" fill="url(#photo)"/>
+    <path d="m14 106 92-51 24 37v33H14Z" fill="#626c6c" opacity=".2"/>
+    <path d="M1 1h137v149" stroke="#aab0ac" stroke-opacity=".25"/>
+  </g>
+
+  <!-- The curved leaves rise slightly at the binding, exposing the cover and page edges. -->
+  <g transform="rotate(-9 252 232)" filter="url(#objectShadow)">
+    <path d="m93 137 146 10q21-7 34-7l132 12 1 170-143-3q-12 5-24 2l-145-13Z" fill="url(#cover)" stroke="#4d5357" stroke-width="1"/>
+    <path d="m100 147 139 10 25-7 132 12v151l-132-5q-16 6-26 2l-138-12Z" fill="#51595b"/>
+    <path d="m100 151 138 10 26-7 131 12M100 297l139 12q12 2 25-3l132 4M101 301l138 12q12 2 25-3l131 4" stroke="#919896" stroke-opacity=".38" stroke-width=".8"/>
+    <path d="m102 142 130 4q13 1 27 15v143q-13-11-29-12l-128-1Z" fill="url(#leftPaper)" filter="url(#paperGrain)"/>
+    <path d="M259 161q14-19 32-21l104 10v151l-113-10q-13-1-23 13Z" fill="url(#rightPaper)" filter="url(#paperGrain)"/>
+    <path d="m102 142 130 4q13 1 27 15 14-19 32-21l104 10" stroke="#c6cbc5" stroke-opacity=".48" stroke-width=".9"/>
+    <path d="M259 162v140" stroke="#333b3f" stroke-width="1.2"/>
+    <path d="M263 163v130" stroke="#bfc4be" stroke-opacity=".35" stroke-width=".8"/>
+    <path d="m252 302-2 28 7-4 5 5 1-27" fill="#8e7b58"/>
+    <path d="m253 308-1 17" stroke="#c8b894" stroke-opacity=".45" stroke-width=".6"/>
+    <g stroke="#46504f" stroke-width=".8" opacity=".47">
+      <path d="m121 168 49 2m-49 7 75 3m-75 8 60 2"/>
+      <path d="m121 220 96 4m-96 8 67 3m-67 8 84 3m-84 8 45 2"/>
+      <path d="m125 209-6-1v-9l6 1m17 3 38 1m-57 67 16 1"/>
+    </g>
+    <g stroke="#d3d5cb" stroke-width=".6" opacity=".2">
+      <path d="m285 163 40 3m-40 5 70 5m-70 5 58 4m-58 65 78 7m-78 2 48 4m-48 6 66 6"/>
+    </g>
+    <path d="m107 148 1 138" stroke="#d2d4ca" stroke-opacity=".14" stroke-width=".6"/>
+  </g>
+
+  <g transform="translate(285 164) rotate(14 71 66)" filter="url(#printShadow)">
+    <rect width="142" height="137" rx="1" fill="url(#printBorder)"/>
+    <g clip-path="url(#frontPhoto)">
+      <rect x="9" y="9" width="124" height="103" fill="url(#photo)"/>
+      <g filter="url(#defocus)">
+        <path d="m1 93 36-64 44 8 52 73Z" fill="#788180" opacity=".35"/>
+        <path d="m23 6 35 58-17 50-35-28Z" fill="#222a2f"/>
+        <path d="M108 0 85 119" stroke="#b5b9ae" stroke-opacity=".23" stroke-width="18"/>
+        <path d="m14 97 117-33" stroke="#b6bba9" stroke-opacity=".12" stroke-width="8"/>
+      </g>
+    </g>
+    <path d="M.5.5h141v136H.5Z" stroke="#c7cbc3" stroke-opacity=".24"/>
+    <path d="M12 125h19m4 0h5" stroke="#414a4d" stroke-width=".7"/>
+  </g>
+
+  <!-- A narrow brushed-metal barrel, with a small antique-gold collar. -->
+  <g transform="translate(397 206) rotate(28)" filter="url(#printShadow)">
+    <path d="M1 6Q1 1 5.5 1T10 6v122H1Z" fill="url(#metal)" stroke="#727d86" stroke-width=".45"/>
+    <path d="M1 47h9v3H1Z" fill="#9a8969"/>
+    <path d="M1 128h9l-3.8 19H5Z" fill="#879198"/>
+    <path d="m5 147 .6 6 .6-6" fill="#d1d2c8"/>
+    <path d="M8 8v31q0 4-3 4" stroke="#bbc3c5" stroke-width="1.4"/>
+    <path d="M3 54v70" stroke="#dbe0db" stroke-opacity=".28" stroke-width=".5"/>
+  </g>
+</svg>

@@ -8,8 +8,10 @@ authentication. Reloading resets access and all note progress.
 ## Visual system
 
 `styles.css` owns the charcoal, graphite, pearl, silver, and restrained antique-gold
-palette. The original vector emblem lives at `assets/detective-emblem.svg` and is
-reused in the compact header and decorative introduction. It has no interaction.
+palette. The original vector emblem lives at `assets/detective-emblem.svg` in the
+compact header. The separate `assets/investigation-still-life.svg` illustrates
+abstract working materials in the introduction, with no readable case content.
+The still life is decorative, noninteractive, and hidden from assistive technology.
 
 Image choices keep their native radio inputs and existing DOM order. The radio
 sits beside the caption below the image. Desktop uses equal image stages with

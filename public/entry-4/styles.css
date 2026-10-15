@@ -52,15 +52,8 @@ h1, h2, h3, p, figure { margin: 0; }
 .primary:active:not(:disabled) { transform: translateY(1px); background: #aeb2b9; }
 .intro-copy .primary { min-width: 190px; justify-content: space-between; }
 
-.observation-study { width: min(100%, 360px); margin-inline: auto; padding: 22px; border: 1px solid #2c3035; background: #151719; position: relative; }
-.observation-study::before { content: ''; position: absolute; top: -1px; right: 22px; width: 40px; height: 1px; background: var(--gold); }
-.observation-field { position: relative; aspect-ratio: 1; display: grid; place-items: center; }
-.observation-lines { position: absolute; inset: 0; width: 100%; height: 100%; stroke: #383d44; stroke-width: .8; }
-.observation-lines circle { stroke: #41464e; }
-.observation-field img { position: relative; width: 52%; height: auto; padding: 13px; background: #151719; }
-.observation-foot { display: flex; align-items: center; gap: 9px; margin-top: 20px; }
-.observation-foot span { height: 1px; flex: 1; background: var(--rule); }
-.observation-foot i { width: 4px; height: 4px; background: var(--gold); transform: rotate(45deg); }
+.investigator-still-life { width: min(100%, 420px); margin-inline: auto; pointer-events: none; }
+.investigator-still-life img { display: block; width: 100%; height: auto; }
 .workspace-footer { display: flex; align-items: center; gap: 18px; padding-block: 22px max(24px, env(safe-area-inset-bottom)); color: var(--muted); font-size: .7rem; }
 .footer-line { flex: 1; height: 1px; background: var(--rule); }
 .workspace-footer [lang='en'] { color: var(--gold); font: .7rem 'Courier New', monospace; }
@@ -162,8 +155,7 @@ h1, h2, h3, p, figure { margin: 0; }
   .intro-copy h1 { font-size: clamp(2.8rem, 12vw, 3.8rem); line-height: 1.4; }
   .intro-text { font-size: .95rem; margin-block: 18px 24px; }
   .intro-copy .primary { min-width: 180px; }
-  .observation-study { width: min(68%, 240px); padding: 16px; }
-  .observation-foot { margin-top: 14px; }
+  .investigator-still-life { width: min(100%, 320px); }
   .view { padding-block: 24px 32px; }
   .view-topline { margin-bottom: 16px; }
   .paper-panel { padding: 24px 16px; }
