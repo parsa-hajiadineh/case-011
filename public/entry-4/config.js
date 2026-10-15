@@ -25,7 +25,7 @@ export const entry4Config = {
         { image: "assets/tests/test-2-option-2.png", label: "تصویر ۲" },
         { image: "assets/tests/test-2-option-3.png", label: "تصویر ۳" }
       ],
-      correctOption: 1
+      correctOption: 3
     }
   ],
   // Index 0 is Evidence 1, index 6 is Evidence 7. Each row contains notes 1–3.
