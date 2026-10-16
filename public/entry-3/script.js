@@ -120,98 +120,14 @@ detailsButton.addEventListener("click", () => {
 });
 
 const soundToggle = document.getElementById("sound-toggle");
-const soundError = document.getElementById("sound-error");
-let audioContext;
-let masterGain;
-let soundRequested = false;
-let soundRevision = 0;
-
-function renderSound(enabled) {
-  soundToggle.setAttribute("aria-pressed", String(enabled));
-  soundToggle.setAttribute("aria-label", enabled ? "خاموش کردن صدا" : "روشن کردن صدا");
-}
-function createAmbience() {
-  const Context = window.AudioContext || window.webkitAudioContext;
-  if (!Context) throw new Error("Web Audio is unavailable");
-  audioContext = new Context();
-  masterGain = audioContext.createGain();
-  masterGain.gain.value = 0;
-  masterGain.connect(audioContext.destination);
-  // Soft filtered room texture and a slowly breathing low archival hum.
-  const buffer = audioContext.createBuffer(1, audioContext.sampleRate * 4, audioContext.sampleRate);
-  const samples = buffer.getChannelData(0);
-  for (let index = 0; index < samples.length; index++) samples[index] = Math.random() * 2 - 1;
-  const noise = audioContext.createBufferSource();
-  noise.buffer = buffer;
-  noise.loop = true;
-  const filter = audioContext.createBiquadFilter();
-  filter.type = "lowpass";
-  filter.frequency.value = 180;
-  const noiseGain = audioContext.createGain();
-  noiseGain.gain.value = 0.04;
-  noise.connect(filter).connect(noiseGain).connect(masterGain);
-  noise.start();
-  const hum = audioContext.createOscillator();
-  hum.frequency.value = 72;
-  const humGain = audioContext.createGain();
-  humGain.gain.value = 0.009;
-  hum.connect(humGain).connect(masterGain);
-  hum.start();
-  const breathing = audioContext.createOscillator();
-  breathing.frequency.value = 0.08;
-  const depth = audioContext.createGain();
-  depth.gain.value = 0.003;
-  breathing.connect(depth).connect(humGain.gain);
-  breathing.start();
-}
-function silence() {
-  if (!masterGain) return;
-  masterGain.gain.cancelScheduledValues(audioContext.currentTime);
-  masterGain.gain.setValueAtTime(0, audioContext.currentTime);
-}
-function audioUnavailable(revision) {
-  if (revision !== soundRevision) return;
-  soundRequested = false;
-  silence();
-  renderSound(false);
-  soundError.textContent = "پخش صدا در این مرورگر در دسترس نیست.";
-  if (audioContext) void audioContext.suspend().catch(() => {});
-}
-function resumeSound(revision) {
-  try {
-    if (!audioContext) createAmbience();
-    // Called synchronously inside the activation handler, including on Safari.
-    audioContext.resume().then(() => {
-      if (revision !== soundRevision) return;
-      if (!soundRequested || document.hidden) { silence(); return audioContext.suspend(); }
-      if (audioContext.state !== "running") throw new Error("Audio activation was blocked");
-      masterGain.gain.setTargetAtTime(0.3, audioContext.currentTime, 0.2);
-      renderSound(true);
-    }).catch(() => audioUnavailable(revision));
-  } catch { audioUnavailable(revision); }
-}
+const backgroundMusic = window.createBackgroundMusic({
+  button: soundToggle,
+  status: document.getElementById("sound-error")
+});
 soundToggle.addEventListener("click", () => {
-  soundRequested = !soundRequested;
-  soundRevision++;
-  soundError.textContent = "";
-  if (soundRequested) { evidenceAudio.pause(); resumeSound(soundRevision); }
-  else {
-    silence();
-    renderSound(false);
-    if (audioContext) void audioContext.suspend().catch(() => audioUnavailable(soundRevision));
-  }
+  if (!backgroundMusic.enabled) evidenceAudio.pause();
+  backgroundMusic.toggle();
 });
-function syncVisibility() {
-  if (!audioContext) return;
-  if (document.hidden) { silence(); void audioContext.suspend().catch(() => {}); }
-  else if (soundRequested) resumeSound(soundRevision);
-}
-document.addEventListener("visibilitychange", syncVisibility);
-window.addEventListener("pagehide", () => {
-  if (audioContext) { silence(); void audioContext.suspend().catch(() => {}); }
-});
-window.addEventListener("pageshow", syncVisibility);
-
 
 const mediaDialog = document.getElementById("media-dialog");
 const evidenceAudio = document.getElementById("evidence-audio");
@@ -228,12 +144,14 @@ let lastProgress = 0;
 let lastMovement = 0;
 
 function stopAmbience() {
-  soundRequested = false;
-  soundRevision++;
-  silence();
-  renderSound(false);
-  if (audioContext) void audioContext.suspend().catch(() => {});
+  backgroundMusic.setBlocked(true);
 }
+function restoreAmbience() {
+  backgroundMusic.setBlocked(false);
+}
+evidenceAudio.addEventListener("pause", restoreAmbience);
+evidenceAudio.addEventListener("ended", restoreAmbience);
+evidenceAudio.addEventListener("error", restoreAmbience);
 function formatTime(seconds) {
   if (!Number.isFinite(seconds)) return "—";
   return Math.floor(seconds / 60) + ":" + String(Math.floor(seconds % 60)).padStart(2, "0");
@@ -272,6 +190,7 @@ function attemptPlayback() {
   const attempt = evidenceAudio.play();
   if (attempt) attempt.catch(() => {
     if (revision !== mediaRevision || !mediaDialog.open || mediaFailed) return;
+    restoreAmbience();
     mediaStatus.textContent = "برای پخش فایل صوتی، دکمه پخش را فشار دهید.";
     renderMedia();
   });

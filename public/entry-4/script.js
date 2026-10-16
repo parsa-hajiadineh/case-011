@@ -1,5 +1,11 @@
 import { entry4Config } from './config.js';
 
+const backgroundMusic = window.createBackgroundMusic({
+  button: document.getElementById('sound-toggle'),
+  status: document.getElementById('sound-status')
+});
+document.getElementById('sound-toggle').addEventListener('click', () => backgroundMusic.toggle());
+
 const workspace = document.getElementById('workspace');
 const progress = new Map(entry4Config.hintSections.map(({ id }) => [id, 0]));
 const testNames = ['بررسی اول', 'بررسی دوم', 'بررسی سوم'];

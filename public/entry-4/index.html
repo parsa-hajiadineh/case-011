@@ -7,6 +7,7 @@
   <title>غلامرضا آینده · CASE 011</title>
   <link rel="preload" href="../entry-1/assets/fonts/Vazirmatn-Variable.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="styles.css">
+  <script src="../shared/background-music.js" defer></script>
   <script type="module" src="script.js"></script>
 </head>
 <body>
@@ -16,7 +17,13 @@
         <img class="detective-emblem" src="assets/detective-emblem.svg" width="44" height="44" alt="">
         <p class="personal-mark">غلامرضا آینده<span>کارآگاه</span></p>
       </div>
-      <span class="case-mark" lang="en" dir="ltr">CASE / 011</span>
+      <div class="header-sound">
+        <span class="case-mark" lang="en" dir="ltr">CASE / 011</span>
+        <button id="sound-toggle" class="sound-toggle" type="button" aria-pressed="false" aria-label="روشن کردن صدا" aria-describedby="sound-status">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"/><path class="sound-muted" d="m17 9 5 6m0-6-5 6"/><path class="sound-enabled" d="M16 8a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14"/></svg>
+        </button>
+        <span id="sound-status" class="sound-status" role="status"></span>
+      </div>
     </header>
     <main id="workspace">
       <section class="introduction" aria-labelledby="intro-title">

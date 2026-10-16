@@ -267,104 +267,13 @@ for (const image of document.querySelectorAll(".suspect-portrait img")) {
 }
 
 const soundToggle = document.getElementById("sound-toggle");
-const soundLabel = document.getElementById("sound-label");
-const soundStatus = document.getElementById("sound-status");
-let audioContext;
-let ambientGain;
-let soundEnabled = false;
-let soundRequested = false;
-let soundRevision = 0;
-
-function updateSoundLabel() {
-  soundToggle.setAttribute("aria-pressed", String(soundEnabled));
-  soundToggle.setAttribute("aria-label", soundEnabled ? "خاموش کردن صدا" : "روشن کردن صدا");
-  soundLabel.textContent = soundEnabled
-    ? "صدا روشن"
-    : "صدا خاموش";
-}
-
-function createAmbientSound() {
-  const AudioContext = window.AudioContext || window.webkitAudioContext;
-  if (!AudioContext) throw new Error("Web Audio is unavailable");
-  audioContext = new AudioContext();
-  ambientGain = audioContext.createGain();
-  ambientGain.gain.value = 0;
-  ambientGain.connect(audioContext.destination);
-
-  // Quiet sine tones create an original ambience without downloaded assets.
-  for (const frequency of [58, 87.1, 116.2]) {
-    const oscillator = audioContext.createOscillator();
-    oscillator.type = "sine";
-    oscillator.frequency.value = frequency;
-    oscillator.connect(ambientGain);
-    oscillator.start();
+const backgroundMusic = window.createBackgroundMusic({
+  button: soundToggle,
+  status: document.getElementById("sound-status"),
+  onChange(enabled) {
+    document.getElementById("sound-label").textContent = enabled ? "صدا روشن" : "صدا خاموش";
   }
-}
-
-function silenceAudio() {
-  if (!ambientGain) return;
-  ambientGain.gain.cancelScheduledValues(audioContext.currentTime);
-  ambientGain.gain.setValueAtTime(0, audioContext.currentTime);
-}
-
-function audioUnavailable() {
-  soundRequested = false;
-  soundEnabled = false;
-  silenceAudio();
-  if (audioContext) audioContext.suspend().catch(() => {});
-  updateSoundLabel();
-  soundStatus.textContent = "پخش صدا در این مرورگر در دسترس نیست.";
-}
-
-function syncAudio() {
-  if (!audioContext) return;
-  const revision = soundRevision;
-  if (!soundRequested || document.hidden) {
-    silenceAudio();
-    audioContext.suspend().catch(() => {});
-    return;
-  }
-  audioContext.resume().then(() => {
-    // A mute or visibility change can occur while resume is pending.
-    if (revision !== soundRevision) return;
-    if (!soundRequested || document.hidden) {
-      silenceAudio();
-      return audioContext.suspend().catch(() => {});
-    }
-    if (audioContext.state !== "running") {
-      audioUnavailable();
-      return;
-    }
-    ambientGain.gain.setTargetAtTime(0.008, audioContext.currentTime, 0.4);
-    soundEnabled = true;
-    updateSoundLabel();
-  }).catch(() => {
-    if (revision === soundRevision && soundRequested) audioUnavailable();
-  });
-}
-
+});
 soundToggle.addEventListener("click", () => {
-  soundStatus.textContent = "";
-  soundRequested = !soundRequested;
-  soundRevision++;
-  if (!soundRequested) {
-    soundEnabled = false;
-    updateSoundLabel();
-  }
-  try {
-    if (soundRequested && !audioContext) createAmbientSound();
-    // No await, timer, or deferred work precedes resume in this user gesture.
-    syncAudio();
-  } catch {
-    audioUnavailable();
-  }
+  backgroundMusic.toggle();
 });
-updateSoundLabel();
-
-document.addEventListener("visibilitychange", syncAudio);
-window.addEventListener("pagehide", () => {
-  if (!audioContext) return;
-  silenceAudio();
-  audioContext.suspend().catch(() => {});
-});
-window.addEventListener("pageshow", syncAudio);
