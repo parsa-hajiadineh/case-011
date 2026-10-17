@@ -1,67 +1,98 @@
 # CASE 011
 
-CASE 011 is a mystery investigation game website with four independent entry pages, each intended to be reached through its own URL and QR code.
+CASE 011 is a fictional murder-mystery investigation game played with physical evidence, printed materials, and puzzles. This repository contains the game's **web component**: four independent Persian-language portals that players visit during the investigation.
 
-## Current status
+These are fictional in-game interfaces, not real government, police, forensic, or identity-verification services. The repository does not contain the complete physical game.
 
-Entry 1 contains archive access, four suspect dossiers, physical-evidence requirements, document categories, and a PDF viewer. The archive form accepts Latin, Persian, and Arabic-Indic digits, with inline validation and two timed access confirmations. The archive-number check is a client-side game mechanic, not authentication.
+**Spoiler notice:** the source code, configuration, evidence files, and technical documentation contain puzzle solutions and story spoilers. The screenshots below show only the initial landing screens.
 
-Entry 1 also includes investigator-selected document categories and an internal native PDF viewer. The documents control sits beside the evidence button, starts visibly locked with `aria-disabled`, and unlocks only by returning from evidence requirements. Locked activation opens a compact modal notification; confirmation or Escape dismisses it and restores button focus. Browsers without native modal-dialog support use a centered fallback with a backdrop and contained focus. A full reload resets it to locked. Category and viewer return actions preserve dossier disclosures, scroll position, and the optional sound setting. A single compact sound control moves beside each active view's main title without restarting audio. Audio resumes directly from the activation gesture; its icon and accessible state confirm successful activation, while failures display a Persian status message. Decorative hover styles apply only to hover-capable devices. These are internal views, with no additional entry points.
+## Portals
 
-Original PDFs are retained in `public/entry-1/assets/evidence/`. Category lists check availability with HTTP HEAD requests; unavailable files retain their titles with a disabled control and an unavailable message. PDFs load only after selection. The viewer includes a separate-tab fallback link for devices without embedded PDF support. Serve this flow over HTTP with a static server that supports HEAD requests.
+| Portal | Role in the game | Direct path |
+| --- | --- | --- |
+| Entry 1 | A fictional document-registration and case-access portal, with internal dossier, evidence, and PDF views. | `/entry-1/` |
+| Entry 2 | A fictional biological-pattern database, with comparison inputs and staged record views. | `/entry-2/` |
+| Entry 3 | A fictional case archive and recovered-evidence interface, including an evidence-recording player. | `/entry-3/` |
+| Entry 4 | The fictional detective's personal site, with familiarity checks and progressively revealed hints. | `/entry-4/` |
 
-Dossiers retain the supplied Persian copy, use the four provided portraits, and offer independent native statement disclosures. Motives contain decorative shapes and a restricted-access label only. Returning from evidence requirements preserves open statements and the dossier scroll position. Optional Web Audio ambience remains available across all views, starts only when enabled, and pauses while the page is hidden.
+Each portal has its own direct URL intended for its own QR code. There is no cross-entry navigation; each entry may contain several internal views. The client-side puzzle gates are game mechanics, not production authentication.
 
-Entry 2 is an independent PATTERN DATABASE portal at `/entry-2/`. Four button-based comparison slots accept only `=` or `≠` from its keypad. Validation retains choices after errors; a successful submission locks controls and reveals the match, reference, and warning at 700 ms, 1900 ms, and 3100 ms. Status announcements contain only the newly revealed section. Entry 2 reuses the existing self-hosted Persian font without requiring archive access or adding navigation between entries.
+## Screenshots
 
-On mobile, entry 2 places a bounded output panel above the comparison controls. A dynamic viewport budget uses the measured, wrapped header height and safe areas to give the input panel the remaining space. Both panels support internal scrolling; staged reveals scroll only inside the output region. Its scoped sticky position keeps feedback available during page scrolling. Larger text and short landscape viewports can use normal page scrolling.
+Captured from the current local source at a desktop viewport of 1440 × 1000, without entering answers or opening later story screens.
 
-After the warning transition and a two-second reading interval, entry 2 offers an internal original-record view. Its corrupted-file notification uses a 15-second elapsed-time game sequence with counter-rotating segmented rings, a core scan, phased nodes, and cyan intensity changes. Processing animations run only while the decoding view is visible and stop at completion. Reduced motion keeps geometry still and gently changes the whole emblem's intensity throughout the wait. Record navigation is forward only; pending callbacks are cancelled on page exit, and hidden views are inert. The decoded record contains only International Morse symbols generated from the ITU-R M.1677-1 alphabet. No media playback or actual file decoding is involved.
-
-Entry 3 is an independent case-archive portal at `/entry-3/`, with a charcoal, ivory, and copper identity. Its split Evidence ID field uppercases one Latin letter and normalizes two Persian, Arabic-Indic, or Latin digits while preserving leading zeros. Only `B-11` retrieves a record, after five seconds; the warning opens 1500 ms later and advances to an official evidence report and the provider’s statement. Validation preserves entered values, successful retrieval prevents duplicate submissions, and the warning supports a focus-contained fallback on browsers without native modal dialogs. Optional original archival ambience uses one explicitly activated Web Audio context and suspends while hidden. Entry 4 remains an empty scaffold. QR codes and hosting are not implemented.
-
-Entry 2 has an optional icon-only sound toggle beside its header case reference. It creates one Web Audio context only after explicit activation, using quiet filtered ventilation noise and instrument tones. Sound preference carries through internal views; hidden pages suspend audio, and returning resumes only an enabled preference. Failed activation leaves the control off with an accessible status message.
-
-## Structure
-
-```text
-public/
-  shared/foundation.css
-  entry-1/
-  entry-2/
-  entry-3/
-  entry-4/
-```
-
-Each entry directory contains its own `index.html`, `styles.css`, `script.js`, and `assets/` directory. Empty asset directories are retained with `.gitkeep` files. `shared/foundation.css` provides typography, color tokens, basic controls, focus styles, and reduced-motion rules; entry-specific layout and behavior stay in their entry directory. No external libraries or media services are required.
-
-Entry 1 uses a dark archival composition, an original decorative SVG, a brief checking state, and reduced-motion-aware transitions. Its self-hosted variable Vazirmatn font comes from the [official v33.003 release](https://github.com/rastikerdar/vazirmatn/tree/v33.003). The unmodified font and its SIL Open Font License are retained in `public/entry-1/assets/fonts/`. Font loading falls back to Tahoma and system sans-serif fonts.
-
-Portraits are stored in `public/entry-1/assets/suspects/`: `IMG_0703.png` (Kamran), `IMG_0705.png` (Nora), `IMG_0718.png` (Arash), and `IMG_0721.png` (Bamakh). Images use fixed 4:5 frames and show a neutral fallback if loading fails. Supplied age fields and Arash's departure time contain no numeric values; their text is retained without inferred values.
-
-| Entry | Direct path |
+| Entry 1 — Document registration | Entry 2 — Biological-pattern database |
 | --- | --- |
-| 1 | `/entry-1/` |
-| 2 | `/entry-2/` |
-| 3 | `/entry-3/` |
-| 4 | `/entry-4/` |
+| ![Entry 1 landing screen with a Persian archive-number form and a document illustration](docs/screenshots/entry-1.png) | ![Entry 2 landing screen with biological-pattern comparison controls and an empty output panel](docs/screenshots/entry-2.png) |
+| **Entry 3 — Case archive** | **Entry 4 — Detective's personal site** |
+| ![Entry 3 landing screen with an empty evidence identifier form and an archive illustration](docs/screenshots/entry-3.png) | ![Entry 4 landing screen with the detective's Persian introduction and an investigation still life](docs/screenshots/entry-4.png) |
 
-Pages must remain independent, with no links or navigation between them and no requirement to visit another page first. Keep page-specific code and assets within the corresponding directory. Remaining pages are pending individual requirements.
+## Technology
 
-## Local development
+- HTML, CSS, and vanilla JavaScript; Entry 4 uses JavaScript modules.
+- Persian right-to-left interfaces with the self-hosted Vazirmatn font, responsive layouts, and reduced-motion styles.
+- Browser-native PDF and audio playback, plus synthesized interaction effects through the Web Audio API.
+- A shared background-music utility used by all four entries.
 
-No dependencies or build step are required. Serve `public/` with a static HTTP server. If Python 3 is installed, run from the repository root:
+There is no application backend, database, package installation, or build step. The existing verification scripts in `tests/` use Node.js; Node.js is not required to serve or play the game.
+
+## Local preview
+
+From the repository root, serve `public/` over HTTP:
 
 ```sh
-python -m http.server 8000 --directory public
+python -m http.server 8001 --directory public
 ```
 
-Open entry 1 at `http://localhost:8000/entry-1/` or entry 2 at `http://localhost:8000/entry-2/`. Entry 3 is available at `http://localhost:8000/entry-3/`; entry 4 remains a blank scaffold. Entries 1, 2, and 3 require JavaScript for their interactions; unsupported audio does not prevent archive access.
+Open any portal directly:
 
-## Deployment
+- [Entry 1](http://localhost:8001/entry-1/)
+- [Entry 2](http://localhost:8001/entry-2/)
+- [Entry 3](http://localhost:8001/entry-3/)
+- [Entry 4](http://localhost:8001/entry-4/)
 
-The static document root is `public/`. Hosting must serve each directory's `index.html` at its corresponding path without routing all entries to a shared page. Each future QR code should point to its entry's full deployed URL. No hosting provider or deployment workflow has been selected.
+Python 3 is only a convenient local static server, not an application runtime dependency. Another static server can be used if it supports HTTP HEAD requests for the evidence-file availability checks. Opening files directly with `file://` is insufficient for these checks and Entry 4's JavaScript modules. Enable JavaScript in the browser.
 
-## Entry 3 evidence recording
+Background music starts off. Its toggle controls music only; interaction effects activate through user interaction. Recording playback temporarily suppresses decorative audio while preserving the existing music pause/resume behavior and explicit mute choice. Hidden pages suspend decorative audio.
 
-The report opens an audio warning followed by a native media player. Place the supplied recording at `public/entry-3/assets/audio/B-11.mp3`; entry 3 loads `assets/audio/B-11.mp3`. No substitute recording is included. Missing or unreadable media disables playback and seeking while preserving access to the investigator note and the final internal timeline view. The timeline presents the finding, unanswered question, and static Evidence 7 reference; supplied blank time values remain unfilled and isolated for bidirectional rendering. Playback events and actual time progression drive the equalizer. Choosing media turns ambience off; enabling ambience pauses the recording. Closing the dialog or opening the timeline pauses playback and preserves its position for the page session. The report and timeline use normal page scrolling, while the dialog scrolls within the viewport when necessary.
+The evidence recording expected at `public/entry-3/assets/audio/B-11.mp3` is not included in this checkout. Its player reports unavailable media while the remaining interface stays usable. No replacement recording is supplied.
+
+For static hosting, use `public/` as the document root and preserve the four entry paths and their assets. Serve each entry's own `index.html`; do not route all four paths to one shared page.
+
+## Repository layout
+
+```text
+public/                  Static site root
+  entry-1/               Document-registration portal and evidence PDFs
+  entry-2/               Biological-pattern database portal
+  entry-3/               Case archive and evidence player
+  entry-4/               Detective's site, content configuration, and assets
+  shared/                Shared foundation styles and audio utility
+docs/screenshots/        Four initial-screen captures used above
+tests/                   Existing Node.js and browser verification scripts
+LICENSE                  MIT license for project-owned source code
+```
+
+Each entry keeps its own HTML, CSS, JavaScript, and assets. [Entry 4's technical notes](public/entry-4/DEVELOPMENT.md) describe its content configuration and browser verification; they contain spoilers.
+
+## Credits and licensing
+
+Project-owned source code and technical documentation are licensed under the [MIT License](LICENSE), copyright Parsa Haji Adineh. This license does not grant rights to the game's story, dialogue, evidence documents, recordings, images, music, fonts, or third-party media. Preserve the separate notices and terms below when reusing assets.
+
+### Music
+
+The installed MP3 metadata identifies Kevin MacLeod as the artist of all four background tracks. The corresponding official Incompetech pages provide attribution under [Creative Commons Attribution 4.0 International](https://creativecommons.org/licenses/by/4.0/):
+
+| Used in | Track and official source | Artist |
+| --- | --- | --- |
+| Entry 1 | [Lightless Dawn](https://incompetech.com/music/royalty-free/index.html?Search=Search&isrc=USUAN1100655) | Kevin MacLeod ([incompetech.com](https://incompetech.com/)) |
+| Entry 2 | [Dark Fog](https://incompetech.com/music/royalty-free/index.html?Search=Search&isrc=USUAN1300031) | Kevin MacLeod ([incompetech.com](https://incompetech.com/)) |
+| Entry 3 | [Echoes of Time](https://incompetech.com/music/royalty-free/index.html?Search=Search&isrc=USUAN1300029) | Kevin MacLeod ([incompetech.com](https://incompetech.com/)) |
+| Entry 4 | [Nervous](https://incompetech.com/music/royalty-free/index.html?Search=Search&isrc=USUAN1100139), tagged “Nervous Piano” in the installed file | Kevin MacLeod ([incompetech.com](https://incompetech.com/)) |
+
+The local copies are named `assets/audio/background.mp3` within each entry. The player loops them at reduced playback volume. Earlier audio-file edits, if any, are not documented in this repository; no music files were modified during the documentation review. These tracks remain under their own license, not MIT.
+
+### Font and other media
+
+- **Vazirmatn** — Copyright 2015 The Vazirmatn Project Authors. The self-hosted font is documented as coming from the [official v33.003 release](https://github.com/rastikerdar/vazirmatn/tree/v33.003) and retains its [SIL Open Font License 1.1](public/entry-1/assets/fonts/OFL.txt).
+- **Other game media** — The repository includes portraits, puzzle images, evidence PDFs, and illustrations. Their authorship and redistribution permissions are not fully documented here. Do not infer an open media license from the source-code license. Confirm the relevant rights before public redistribution. Any separately supplied evidence recording also needs its own permission and attribution information.

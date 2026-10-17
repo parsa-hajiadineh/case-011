@@ -18,3 +18,8 @@ Thumbs.db
 
 # Local browser verification artifacts
 /.local-verification/
+
+# Local caches and logs
+__pycache__/
+*.py[cod]
+*.log

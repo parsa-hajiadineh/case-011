@@ -1,8 +1,9 @@
 # Entry 4 content and behavior
 
 This is a static, personal detective workspace. Serve it over HTTP so its local
-JavaScript modules load. No packages, backend, audio, storage, or cross-entry
-navigation are used. The sequential tests are a client-side game mechanic, not
+JavaScript modules load. No packages, backend, persistent storage, or cross-entry
+navigation are used. Background music and interaction effects use the shared audio
+utility. The sequential tests are a client-side game mechanic, not
 authentication. Reloading resets access and all note progress.
 
 ## Visual system
