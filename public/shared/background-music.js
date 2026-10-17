@@ -41,12 +41,12 @@ window.createBackgroundMusic = function ({ button, status, onChange = () => {}, 
   function syncEffects(initialize = false) {
     if (!effects) return;
     try {
-      if (!enabled || blocked || leaving || document.hidden) {
+      if (blocked || leaving || document.hidden) {
         silenceEffects(true);
         if (context && context.state !== "closed") context.suspend().catch(() => {});
         return;
       }
-      // Only the explicit sound-toggle gesture may create the effects context.
+      // Create the effects context only from an explicit user interaction.
       if (!context && initialize) {
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         if (!AudioContext) return;
@@ -55,14 +55,14 @@ window.createBackgroundMusic = function ({ button, status, onChange = () => {}, 
         const samples = noiseBuffer.getChannelData(0);
         for (let index = 0; index < samples.length; index++) samples[index] = Math.random() * 2 - 1;
       }
-      if (context && context.state !== "closed") context.resume().catch(() => {});
+      if (context && context.state !== "closed" && context.state !== "running") context.resume().catch(() => {});
     } catch (_) {
       // Decorative audio must never interrupt the game or background playback.
     }
   }
 
   function playCue(name) {
-    if (!effects || !enabled || blocked || leaving || document.hidden || context?.state !== "running") return;
+    if (!effects || blocked || leaving || document.hidden || context?.state !== "running") return;
     const cue = cues[name];
     if (!cue) return;
     const now = context.currentTime;
@@ -143,6 +143,14 @@ window.createBackgroundMusic = function ({ button, status, onChange = () => {}, 
     });
   }
 
+  if (effects) {
+    const activateEffects = (event) => {
+      if (event.isTrusted) syncEffects(true);
+    };
+    for (const name of ["pointerup", "keydown", "click"]) {
+      document.addEventListener(name, activateEffects, { capture: true });
+    }
+  }
   document.addEventListener("visibilitychange", sync);
   window.addEventListener("pagehide", () => { leaving = true; sync(); });
   window.addEventListener("pageshow", () => { leaving = false; sync(); });
