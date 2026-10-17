@@ -134,7 +134,7 @@ const backgroundMusic = window.createBackgroundMusic({
 backgroundMusic.watchInput(letter);
 backgroundMusic.watchInput(number);
 soundToggle.addEventListener("click", () => {
-  if (!backgroundMusic.enabled) evidenceAudio.pause();
+  if (ambienceBlocked && backgroundMusic.enabled) resumeAmbience = false;
   backgroundMusic.toggle();
 });
 
@@ -151,18 +151,26 @@ let mediaRevision = 0;
 let progressFrame;
 let lastProgress = 0;
 let lastMovement = 0;
+let ambienceBlocked = false;
+let resumeAmbience = false;
 
 function stopAmbience() {
-  // Recording playback switches decorative audio off until explicitly re-enabled.
-  if (backgroundMusic.enabled) backgroundMusic.toggle();
+  if (ambienceBlocked) return;
+  // Preserve the sound preference and music position while the recording owns audio.
+  resumeAmbience = backgroundMusic.enabled;
+  ambienceBlocked = true;
   backgroundMusic.setBlocked(true);
 }
 function restoreAmbience() {
+  // Ignore queued pause/end events from an earlier playback attempt.
+  if (!ambienceBlocked || !evidenceAudio.paused && !evidenceAudio.ended) return;
+  ambienceBlocked = false;
+  if (!resumeAmbience && backgroundMusic.enabled) backgroundMusic.toggle();
+  resumeAmbience = false;
   backgroundMusic.setBlocked(false);
 }
 evidenceAudio.addEventListener("pause", restoreAmbience);
 evidenceAudio.addEventListener("ended", restoreAmbience);
-evidenceAudio.addEventListener("error", restoreAmbience);
 function formatTime(seconds) {
   if (!Number.isFinite(seconds)) return "—";
   return Math.floor(seconds / 60) + ":" + String(Math.floor(seconds % 60)).padStart(2, "0");
@@ -209,6 +217,7 @@ function attemptPlayback() {
 function closeMedia() {
   mediaRevision++;
   evidenceAudio.pause();
+  restoreAmbience();
   stopGraphic();
   if (nativeDialog) mediaDialog.close();
   else { mediaDialog.removeAttribute("open"); backdrop.hidden = true; shell.inert = false; }
@@ -225,7 +234,14 @@ document.getElementById("open-audio").addEventListener("click", () => {
 });
 document.getElementById("close-media").addEventListener("click", closeMedia);
 mediaDialog.addEventListener("cancel", (event) => { event.preventDefault(); closeMedia(); });
-mediaDialog.addEventListener("close", () => { evidenceAudio.pause(); stopGraphic(); document.body.classList.remove("dialog-open"); });
+mediaDialog.addEventListener("close", () => {
+  if (mediaDialog.open) return;
+  mediaRevision++;
+  evidenceAudio.pause();
+  restoreAmbience();
+  stopGraphic();
+  document.body.classList.remove("dialog-open");
+});
 document.getElementById("start-media").addEventListener("click", () => {
   if (mediaStarted) return;
   mediaStarted = true;
@@ -265,6 +281,7 @@ evidenceAudio.addEventListener("error", () => {
   mediaFailed = true;
   mediaRevision++;
   evidenceAudio.pause();
+  restoreAmbience();
   stopGraphic();
   mediaStatus.textContent = "فایل صوتی در دسترس نیست.";
   renderMedia();
