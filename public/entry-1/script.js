@@ -29,11 +29,14 @@ form.addEventListener("submit", (event) => {
   form.setAttribute("aria-busy", "true");
   checkingStatus.textContent = "در حال بررسی…";
 
+  backgroundMusic.playCue("process");
+
   // A short checking state also guards rapid button and keyboard submissions.
   window.setTimeout(() => {
     form.removeAttribute("aria-busy");
     checkingStatus.textContent = "";
     if (code !== "0806") {
+      backgroundMusic.playCue("reject");
       accessPending = false;
       archiveInput.disabled = false;
       submitButton.disabled = false;
@@ -45,6 +48,7 @@ form.addEventListener("submit", (event) => {
       return;
     }
 
+    backgroundMusic.playCue("confirm");
     archiveInput.blur();
     evidenceStatus.innerHTML = 'مدرک <bdi dir="ltr">E-02</bdi> تایید شد';
 
@@ -107,6 +111,7 @@ const documentCategories = {
 };
 
 function showInternalView(viewId, focusId, title, scrollPosition = 0) {
+  backgroundMusic.playCue("navigate");
   // Move the same control and handlers; audio preference and context stay intact.
   document.getElementById(`sound-slot-${viewId}`).append(soundControl);
   if (viewId !== "pdf-view") pdfContainer.replaceChildren();
@@ -144,6 +149,7 @@ documentsButton.addEventListener("click", () => {
   if (document.getElementById("destination-view").hidden) return;
   if (!documentsUnlocked) {
     if (!lockedDocumentsDialog.open) {
+      backgroundMusic.playCue("notice");
       if (nativeLockedDialog) lockedDocumentsDialog.showModal();
       else {
         // Older mobile browsers still need a visible, keyboard-contained modal.
@@ -157,11 +163,13 @@ documentsButton.addEventListener("click", () => {
     }
     return;
   }
+  backgroundMusic.playCue("navigate");
   categoryPanel.hidden = !categoryPanel.hidden;
   renderDocumentsControl();
 });
 
 function closeLockedDocuments() {
+  backgroundMusic.playCue("navigate");
   if (nativeLockedDialog) lockedDocumentsDialog.close();
   else {
     lockedDocumentsDialog.removeAttribute("open");
@@ -270,10 +278,12 @@ const soundToggle = document.getElementById("sound-toggle");
 const backgroundMusic = window.createBackgroundMusic({
   button: soundToggle,
   status: document.getElementById("sound-status"),
+  effects: { frequency: 190, cutoff: 1100, waveform: "triangle", texture: 0.65 },
   onChange(enabled) {
     document.getElementById("sound-label").textContent = enabled ? "صدا روشن" : "صدا خاموش";
   }
 });
+backgroundMusic.watchInput(archiveInput);
 soundToggle.addEventListener("click", () => {
   backgroundMusic.toggle();
 });

@@ -44,6 +44,7 @@ function openWarning() {
     backdrop.hidden = false;
     shell.inert = true;
   }
+  backgroundMusic.playCue("notice");
   detailsButton.focus({ preventScroll: true });
 }
 warning.addEventListener("cancel", (event) => event.preventDefault());
@@ -65,6 +66,7 @@ form.addEventListener("submit", (event) => {
   number.value = normalizeDigits(number.value);
   clearError();
   if (!/^[A-Z]$/.test(letter.value) || !/^\d{2}$/.test(number.value)) {
+    backgroundMusic.playCue("reject");
     error.textContent = "شناسه مدرک را به‌صورت یک حرف انگلیسی و دو رقم وارد کنید.";
     identifierField.setAttribute("aria-invalid", "true");
     const invalidField = /^[A-Z]$/.test(letter.value) ? number : letter;
@@ -73,9 +75,11 @@ form.addEventListener("submit", (event) => {
     return;
   }
   if (`${letter.value}-${number.value}` !== "B-11") {
+    backgroundMusic.playCue("reject");
     error.textContent = "مدرکی با این شناسه در بایگانی یافت نشد.";
     return;
   }
+  backgroundMusic.playCue("process");
   retrieving = true;
   for (const control of [letter, number, searchButton]) control.disabled = true;
   form.setAttribute("aria-busy", "true");
@@ -88,6 +92,7 @@ form.addEventListener("submit", (event) => {
   retrievalTimer = window.setTimeout(() => {
     retrieving = false;
     recovered = true;
+    backgroundMusic.playCue("confirm");
     retrieval.hidden = true;
     record.hidden = false;
     form.removeAttribute("aria-busy");
@@ -102,6 +107,7 @@ form.addEventListener("submit", (event) => {
 
 detailsButton.addEventListener("click", () => {
   if (!recovered || !warning.open) return;
+  backgroundMusic.playCue("navigate");
   if (nativeDialog) warning.close();
   else {
     warning.removeAttribute("open");
@@ -122,8 +128,11 @@ detailsButton.addEventListener("click", () => {
 const soundToggle = document.getElementById("sound-toggle");
 const backgroundMusic = window.createBackgroundMusic({
   button: soundToggle,
-  status: document.getElementById("sound-error")
+  status: document.getElementById("sound-error"),
+  effects: { frequency: 155, cutoff: 850, waveform: "triangle", texture: 0.75 }
 });
+backgroundMusic.watchInput(letter);
+backgroundMusic.watchInput(number);
 soundToggle.addEventListener("click", () => {
   if (!backgroundMusic.enabled) evidenceAudio.pause();
   backgroundMusic.toggle();
@@ -144,6 +153,8 @@ let lastProgress = 0;
 let lastMovement = 0;
 
 function stopAmbience() {
+  // Recording playback switches decorative audio off until explicitly re-enabled.
+  if (backgroundMusic.enabled) backgroundMusic.toggle();
   backgroundMusic.setBlocked(true);
 }
 function restoreAmbience() {
@@ -206,6 +217,7 @@ function closeMedia() {
 }
 document.getElementById("open-audio").addEventListener("click", () => {
   if (mediaDialog.open) return;
+  backgroundMusic.playCue("navigate");
   if (nativeDialog) mediaDialog.showModal();
   else { mediaDialog.setAttribute("open", ""); mediaDialog.dataset.fallback = "true"; backdrop.hidden = false; shell.inert = true; }
   document.body.classList.add("dialog-open");
@@ -258,6 +270,7 @@ evidenceAudio.addEventListener("error", () => {
   renderMedia();
 });
 document.getElementById("show-note").addEventListener("click", () => {
+  if (document.getElementById("investigator-note").hidden) backgroundMusic.playCue("reveal");
   document.getElementById("investigator-note").hidden = false;
   document.getElementById("show-note").setAttribute("aria-expanded", "true");
   document.getElementById("note-title").focus({ preventScroll: true });

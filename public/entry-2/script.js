@@ -3,7 +3,8 @@
 const soundToggle = document.getElementById("sound-toggle");
 const backgroundMusic = window.createBackgroundMusic({
   button: soundToggle,
-  status: document.getElementById("sound-status")
+  status: document.getElementById("sound-status"),
+  effects: { frequency: 540, cutoff: 2300, waveform: "sine", texture: 0.15 }
 });
 soundToggle.addEventListener("click", () => {
   backgroundMusic.toggle();
@@ -58,6 +59,7 @@ function renderSlots() {
 slots.forEach((slot, index) => {
   slot.addEventListener("click", () => {
     if (resultPending) return;
+    if (selectedSlot !== index) backgroundMusic.playCue("select");
     selectedSlot = index;
     renderSlots();
   });
@@ -68,6 +70,7 @@ operatorKeys.forEach((key) => {
     if (resultPending) return;
     const operator = key.dataset.operator;
     if (operator !== "=" && operator !== "≠") return;
+    if (choices[selectedSlot] !== operator) backgroundMusic.playCue("select");
     choices[selectedSlot] = operator;
     comparisonError.textContent = "";
     // Cycle from the current row so replacement also advances to an empty row.
@@ -87,14 +90,17 @@ comparisonForm.addEventListener("submit", (event) => {
   if (resultPending) return;
   comparisonError.textContent = "";
   if (choices.some((choice) => choice === null)) {
+    backgroundMusic.playCue("reject");
     comparisonError.textContent = "لطفا نتیجه هر چهار مقایسه را مشخص کنید.";
     return;
   }
   if (!choices.every((choice, index) => choice === (index === 1 ? "=" : "≠"))) {
+    backgroundMusic.playCue("reject");
     comparisonError.textContent = "تطبیقی با الگوی مرجع یافت نشد. نتیجه آزمایش را بررسی کنید.";
     return;
   }
 
+  backgroundMusic.playCue("process");
   resultPending = true;
   [...slots, ...operatorKeys, submitResult].forEach((control) => { control.disabled = true; });
   comparisonForm.setAttribute("aria-busy", "true");
@@ -107,6 +113,7 @@ comparisonForm.addEventListener("submit", (event) => {
     checkingState.hidden = true;
     const match = document.getElementById("match-output");
     revealOutput(match);
+    backgroundMusic.playCue("confirm");
     databaseStatus.textContent = match.textContent.trim();
     window.setTimeout(() => {
       const reference = document.getElementById("reference-output");
@@ -177,6 +184,7 @@ function startDecoding() {
     if (remaining <= 0) {
       decodingTimer = null;
       decodingComplete = true;
+      backgroundMusic.playCue("confirm");
       renderDecodingState();
       recordStatus.textContent = "رمزگشایی پرونده کامل شد.";
       return;
@@ -188,12 +196,14 @@ function startDecoding() {
 
 originalRecordButton.addEventListener("click", () => {
   if (activeView !== "database-view" || originalRecordButton.hidden) return;
+  backgroundMusic.playCue("process");
   showRecordView("original-record-view", "corruption-notice");
   startDecoding();
 });
 
 decodedRecordButton.addEventListener("click", () => {
   if (activeView !== "original-record-view" || !decodingComplete) return;
+  backgroundMusic.playCue("reveal");
   showRecordView("decoded-record-view", "decoded-record-title");
 });
 

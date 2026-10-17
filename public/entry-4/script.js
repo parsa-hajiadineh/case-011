@@ -2,7 +2,8 @@ import { entry4Config } from './config.js';
 
 const backgroundMusic = window.createBackgroundMusic({
   button: document.getElementById('sound-toggle'),
-  status: document.getElementById('sound-status')
+  status: document.getElementById('sound-status'),
+  effects: { frequency: 260, cutoff: 1400, waveform: 'triangle', texture: 0.45 }
 });
 document.getElementById('sound-toggle').addEventListener('click', () => backgroundMusic.toggle());
 
@@ -99,6 +100,7 @@ function showImageTest(index) {
     radio.setAttribute('aria-describedby', message.id);
     radios.push(radio);
     radio.addEventListener('change', () => {
+      backgroundMusic.playCue('select');
       message.textContent = '';
       refreshSelection();
     });
@@ -140,11 +142,13 @@ function showImageTest(index) {
     event.preventDefault();
     if (index !== currentTest || transitionPending) return;
     const selected = radios.find((radio) => radio.checked && !radio.disabled);
-    if (!selected) { message.textContent = 'ابتدا یک تصویر انتخاب کنید.'; return; }
+    if (!selected) { backgroundMusic.playCue('reject'); message.textContent = 'ابتدا یک تصویر انتخاب کنید.'; return; }
     if (Number(selected.value) !== test.correctOption) {
+      backgroundMusic.playCue('reject');
       message.textContent = 'پاسخ درست نیست. دوباره بررسی کنید.';
       return;
     }
+    backgroundMusic.playCue('confirm');
     submit.disabled = true;
     currentTest++;
     if (currentTest === 1) showImageTest(1);
@@ -207,6 +211,7 @@ function showMathTest() {
     input.setAttribute('aria-describedby', message.id);
     // Normalize before limiting length so pasted Persian and Arabic digits work too.
     input.addEventListener('input', () => { input.value = normalizeDigit(input.value); });
+    backgroundMusic.watchInput(input);
     input.addEventListener('keydown', (event) => {
       if (event.key === 'Enter' && name !== 'square') { event.preventDefault(); inputs[inputs.indexOf(input) + 1].focus(); }
     });
@@ -224,8 +229,9 @@ function showMathTest() {
     event.preventDefault();
     if (currentTest !== 2 || transitionPending || accessGranted) return;
     inputs.forEach((input) => { input.value = normalizeDigit(input.value); });
-    if (inputs.some((input) => input.value === '')) { message.textContent = 'مقدار هر سه نماد را وارد کنید.'; return; }
-    if (inputs.map((input) => input.value).join('') !== '370') { message.textContent = 'پاسخ درست نیست. محاسبه را دوباره بررسی کنید.'; return; }
+    if (inputs.some((input) => input.value === '')) { backgroundMusic.playCue('reject'); message.textContent = 'مقدار هر سه نماد را وارد کنید.'; return; }
+    if (inputs.map((input) => input.value).join('') !== '370') { backgroundMusic.playCue('reject'); message.textContent = 'پاسخ درست نیست. محاسبه را دوباره بررسی کنید.'; return; }
+    backgroundMusic.playCue('confirm');
     transitionPending = true;
     submit.disabled = true;
     inputs.forEach((input) => { input.disabled = true; });
@@ -267,7 +273,7 @@ function showIndex() {
     arrow.setAttribute('aria-hidden', 'true');
     open.append(number, name, arrow);
     open.dataset.sectionId = section.id;
-    open.addEventListener('click', () => showEvidence(section.id));
+    open.addEventListener('click', () => { backgroundMusic.playCue('navigate'); showEvidence(section.id); });
     item.append(open);
     list.append(item);
   }
@@ -279,7 +285,7 @@ function showEvidence(id) {
   if (!accessGranted || !section) return;
   const { view, panel } = createView();
   const back = button('بازگشت به فهرست مراحل', 'return-button');
-  back.addEventListener('click', showIndex);
+  back.addEventListener('click', () => { backgroundMusic.playCue('navigate'); showIndex(); });
   view.prepend(back);
   const title = element('h1', 'evidence-name', section.title);
   title.dir = 'ltr';
@@ -317,6 +323,7 @@ function showEvidence(id) {
   reveal.addEventListener('click', () => {
     const next = progress.get(id);
     if (next >= 3 || !hasText(content?.[next])) return;
+    backgroundMusic.playCue('reveal');
     const note = appendNote(next, true);
     progress.set(id, progress.get(id) + 1);
     updateControl();
@@ -331,6 +338,7 @@ function showEvidence(id) {
 
 document.getElementById('begin').addEventListener('click', () => {
   if (currentTest !== -1) return;
+  backgroundMusic.playCue('navigate');
   currentTest = 0;
   showImageTest(0);
 });
