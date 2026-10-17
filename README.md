@@ -19,7 +19,7 @@ Each portal has its own direct URL intended for its own QR code. There is no cro
 
 ## Screenshots
 
-Captured from the current local source at a desktop viewport of 1440 × 1000, without entering answers or opening later story screens.
+Initial landing screens at a desktop viewport of 1440 × 1000.
 
 | Entry 1 — Document registration | Entry 2 — Biological-pattern database |
 | --- | --- |
@@ -55,8 +55,6 @@ Python 3 is only a convenient local static server, not an application runtime de
 
 Background music starts off. Its toggle controls music only; interaction effects activate through user interaction. Recording playback temporarily suppresses decorative audio while preserving the existing music pause/resume behavior and explicit mute choice. Hidden pages suspend decorative audio.
 
-The evidence recording expected at `public/entry-3/assets/audio/B-11.mp3` is not included in this checkout. Its player reports unavailable media while the remaining interface stays usable. No replacement recording is supplied.
-
 For static hosting, use `public/` as the document root and preserve the four entry paths and their assets. Serve each entry's own `index.html`; do not route all four paths to one shared page.
 
 ## Repository layout
@@ -81,7 +79,7 @@ Project-owned source code and technical documentation are licensed under the [MI
 
 ### Music
 
-The installed MP3 metadata identifies Kevin MacLeod as the artist of all four background tracks. The corresponding official Incompetech pages provide attribution under [Creative Commons Attribution 4.0 International](https://creativecommons.org/licenses/by/4.0/):
+Background music by Kevin MacLeod ([Incompetech](https://incompetech.com/)), licensed under [Creative Commons Attribution 4.0 International](https://creativecommons.org/licenses/by/4.0/):
 
 | Used in | Track and official source | Artist |
 | --- | --- | --- |
@@ -90,9 +88,9 @@ The installed MP3 metadata identifies Kevin MacLeod as the artist of all four ba
 | Entry 3 | [Echoes of Time](https://incompetech.com/music/royalty-free/index.html?Search=Search&isrc=USUAN1300029) | Kevin MacLeod ([incompetech.com](https://incompetech.com/)) |
 | Entry 4 | [Nervous](https://incompetech.com/music/royalty-free/index.html?Search=Search&isrc=USUAN1100139), tagged “Nervous Piano” in the installed file | Kevin MacLeod ([incompetech.com](https://incompetech.com/)) |
 
-The local copies are named `assets/audio/background.mp3` within each entry. The player loops them at reduced playback volume. Earlier audio-file edits, if any, are not documented in this repository; no music files were modified during the documentation review. These tracks remain under their own license, not MIT.
+Each entry stores its track at `assets/audio/background.mp3` and loops it at reduced playback volume. The files' prior editing history is undocumented. These tracks remain under their own license, not MIT.
 
 ### Font and other media
 
 - **Vazirmatn** — Copyright 2015 The Vazirmatn Project Authors. The self-hosted font is documented as coming from the [official v33.003 release](https://github.com/rastikerdar/vazirmatn/tree/v33.003) and retains its [SIL Open Font License 1.1](public/entry-1/assets/fonts/OFL.txt).
-- **Other game media** — The repository includes portraits, puzzle images, evidence PDFs, and illustrations. Their authorship and redistribution permissions are not fully documented here. Do not infer an open media license from the source-code license. Confirm the relevant rights before public redistribution. Any separately supplied evidence recording also needs its own permission and attribution information.
+- **Other game media** — Authorship and redistribution permissions for portraits, puzzle images, evidence PDFs, illustrations, and evidence recordings are not fully documented. These assets are not covered by the MIT license.
